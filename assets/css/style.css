@@ -134,3 +134,24 @@ footer a {
     margin: 0 auto;
 }
 
+
+
+/* --- Keranjang Belanja --- */
+.cart-cover {
+    width: 58px;
+    height: 76px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #e9ecef;
+}
+
+.cart-table th {
+    white-space: nowrap;
+    font-size: 0.9rem;
+    color: #495057;
+    background: #f8f9fa;
+}
+
+.cart-table td {
+    padding: 0.9rem 0.65rem;
+}
