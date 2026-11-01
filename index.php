@@ -6,7 +6,11 @@
 //            Card dan mendukung fitur pencarian.
 // ============================================
 
+session_start();
 require_once 'config/koneksi.php';
+
+// Jumlah seluruh buku di keranjang untuk badge navbar.
+$jumlahCart = array_sum($_SESSION['cart'] ?? []);
 
 // --- Logika Pencarian ---
 // Ambil kata kunci dari parameter GET (URL: index.php?cari=...)
@@ -53,6 +57,12 @@ if ($kataCari !== '') {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link active" href="index.php"><i class="bi bi-house me-1"></i>Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cart.php">
+                            <i class="bi bi-cart3 me-1"></i>Keranjang
+                            <span class="badge bg-warning text-dark"><?= $jumlahCart ?></span>
+                        </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="admin/index.php"><i class="bi bi-gear me-1"></i>Panel Admin</a>
@@ -131,6 +141,14 @@ if ($kataCari !== '') {
                                 <a href="detail.php?id=<?= $buku['id'] ?>" class="btn btn-primary btn-sm w-100 mt-1">
                                     <i class="bi bi-eye me-1"></i>Lihat Detail
                                 </a>
+                                <form action="proses_cart.php" method="POST" class="mt-2">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ??= bin2hex(random_bytes(32))) ?>">
+                                    <input type="hidden" name="aksi" value="tambah">
+                                    <input type="hidden" name="id_buku" value="<?= (int) $buku['id'] ?>">
+                                    <button type="submit" class="btn btn-warning btn-sm w-100" <?= $buku['stok'] <= 0 ? 'disabled' : '' ?>>
+                                        <i class="bi bi-cart-plus me-1"></i><?= $buku['stok'] > 0 ? 'Tambah ke Keranjang' : 'Stok Habis' ?>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

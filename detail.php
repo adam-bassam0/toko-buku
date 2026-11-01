@@ -6,7 +6,9 @@
 //            Contoh URL: detail.php?id=3
 // ============================================
 
+session_start();
 require_once 'config/koneksi.php';
+$jumlahCart = array_sum($_SESSION['cart'] ?? []);
 
 // Ambil dan validasi parameter ID dari URL
 // Pastikan ID adalah angka positif untuk keamanan
@@ -55,6 +57,9 @@ $buku = $result->fetch_assoc();
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="index.php"><i class="bi bi-house me-1"></i>Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cart.php"><i class="bi bi-cart3 me-1"></i>Keranjang <span class="badge bg-warning text-dark"><?= $jumlahCart ?></span></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="admin/index.php"><i class="bi bi-gear me-1"></i>Panel Admin</a>
@@ -135,7 +140,15 @@ $buku = $result->fetch_assoc();
                             <a href="index.php" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left me-1"></i>Kembali ke Katalog
                             </a>
-                            <a href="admin/edit.php?id=<?= $buku['id'] ?>" class="btn btn-warning">
+                            <form action="proses_cart.php" method="POST" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ??= bin2hex(random_bytes(32))) ?>">
+                                <input type="hidden" name="aksi" value="tambah">
+                                <input type="hidden" name="id_buku" value="<?= (int) $buku['id'] ?>">
+                                <button type="submit" class="btn btn-warning" <?= $buku['stok'] <= 0 ? 'disabled' : '' ?>>
+                                    <i class="bi bi-cart-plus me-1"></i><?= $buku['stok'] > 0 ? 'Tambah ke Keranjang' : 'Stok Habis' ?>
+                                </button>
+                            </form>
+                            <a href="admin/edit.php?id=<?= $buku['id'] ?>" class="btn btn-outline-dark">
                                 <i class="bi bi-pencil me-1"></i>Edit Buku
                             </a>
                         </div>
