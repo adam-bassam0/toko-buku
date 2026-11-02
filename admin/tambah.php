@@ -1,5 +1,8 @@
 <?php
 // ============================================
+
+session_start();
+$_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 // File    : admin/tambah.php
 // Deskripsi: Form HTML untuk menginput
 //            data buku baru.
@@ -47,6 +50,8 @@
                         POST lebih aman dari GET untuk pengiriman data.
                     -->
                     <form action="../proses/proses_tambah.php" method="POST">
+
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
 
                         <!-- Judul -->
                         <div class="mb-3">
@@ -124,4 +129,3 @@
     <script src="../assets/js/script.js"></script>
 </body>
 </html>
-
