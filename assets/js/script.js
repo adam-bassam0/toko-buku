@@ -1,8 +1,3 @@
-// ============================================
-// File    : assets/js/script.js
-// Deskripsi: JavaScript Native untuk
-//            interaksi sisi klien.
-// ============================================
 
 /**
  * Fungsi konfirmasi sebelum menghapus data.

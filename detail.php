@@ -1,10 +1,4 @@
 <?php
-// ============================================
-// File    : detail.php
-// Deskripsi: Halaman detail satu buku
-//            berdasarkan ID yang dikirim via URL.
-//            Contoh URL: detail.php?id=3
-// ============================================
 
 session_start();
 require_once 'config/koneksi.php';

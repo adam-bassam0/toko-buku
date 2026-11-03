@@ -1,8 +1,4 @@
-/* ============================================
-   File    : assets/css/style.css
-   Deskripsi: Kustomisasi tampilan tambahan
-              di atas Bootstrap 5.
-   ============================================ */
+
 
 /* --- Umum --- */
 body {
@@ -61,6 +57,7 @@ body {
     /* Batasi judul maksimal 2 baris */
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

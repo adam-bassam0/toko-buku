@@ -1,9 +1,3 @@
--- ============================================
--- File    : database/schema.sql
--- Proyek  : Toko Buku Online
--- Deskripsi: Script SQL untuk membuat database,
---            tabel, dan data contoh awal.
--- ============================================
 
 -- 1. Buat dan gunakan database
 CREATE DATABASE IF NOT EXISTS db_toko_buku

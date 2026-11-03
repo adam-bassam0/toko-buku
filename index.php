@@ -1,10 +1,4 @@
 <?php
-// ============================================
-// File    : index.php
-// Deskripsi: Halaman katalog utama toko buku.
-//            Menampilkan daftar buku dalam bentuk
-//            Card dan mendukung fitur pencarian.
-// ============================================
 
 session_start();
 require_once 'config/koneksi.php';
