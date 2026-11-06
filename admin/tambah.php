@@ -1,8 +1,11 @@
 <?php
 // ============================================
+require_once '../config/auth.php';
 
-session_start();
-$_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
+require_admin('../login.php');
+
+// Pesan error dari proses (jika ada).
+$error = $_GET['error'] ?? '';
 // File    : admin/tambah.php
 // Deskripsi: Form HTML untuk menginput
 //            data buku baru.
@@ -21,22 +24,13 @@ $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body class="d-flex flex-column min-vh-100">
 
-    <!-- ===== NAVBAR ADMIN ===== -->
-    <nav class="navbar navbar-dark shadow-sm" style="background-color: #0f3460;">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold" href="index.php">
-                <i class="bi bi-shield-lock me-2"></i>Admin BukuKu
-            </a>
-            <a href="index.php" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>Kembali
-            </a>
-        </div>
-    </nav>
+    <!-- ===== NAVBAR ADMIN (sama dengan navbar pelanggan) ===== -->
+    <?php require __DIR__ . '/../partials/navbar_admin.php'; ?>
 
     <!-- ===== KONTEN FORM ===== -->
-    <main class="container my-5">
+    <main class="container my-5 flex-grow-1">
         <div class="row justify-content-center">
             <div class="col-lg-8">
 
@@ -45,13 +39,21 @@ $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
                         <i class="bi bi-plus-circle-fill me-2 text-success"></i>Tambah Buku Baru
                     </h4>
 
+                    <?php if ($error === 'kolom_wajib'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Judul, penulis, dan penerbit wajib diisi dengan benar.</div>
+                    <?php elseif ($error === 'csrf'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-shield-x me-2"></i>Permintaan tidak valid (token CSRF). Silakan coba lagi.</div>
+                    <?php elseif ($error === 'db_error'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-x-circle me-2"></i>Gagal menyimpan ke database.</div>
+                    <?php endif; ?>
+
                     <!--
                         Form dikirim via POST ke proses_tambah.php.
                         POST lebih aman dari GET untuk pengiriman data.
                     -->
                     <form action="../proses/proses_tambah.php" method="POST">
 
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
 
                         <!-- Judul -->
                         <div class="mb-3">
@@ -124,6 +126,9 @@ $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
             </div>
         </div>
     </main>
+
+    <!-- ===== FOOTER ===== -->
+    <?php require __DIR__ . '/../partials/footer_admin.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/script.js"></script>

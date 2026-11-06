@@ -1,6 +1,6 @@
 <?php
 // Memproses perubahan keranjang belanja berbasis PHP Session.
-session_start();
+require_once __DIR__ . '/config/auth.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: cart.php');

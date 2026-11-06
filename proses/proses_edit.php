@@ -1,7 +1,8 @@
 <?php
 // ============================================
 
-session_start();
+require_once __DIR__ . '/../config/auth.php';
+require_admin('../login.php');
 // File    : proses/proses_edit.php
 // Deskripsi: Memproses data dari form edit buku.
 //            Menerima data POST, validasi,

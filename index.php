@@ -1,12 +1,6 @@
 <?php
-// ============================================
-// File    : index.php
-// Deskripsi: Halaman katalog utama toko buku.
-//            Menampilkan daftar buku dalam bentuk
-//            Card dan mendukung fitur pencarian.
-// ============================================
 
-session_start();
+require_once 'config/auth.php';
 require_once 'config/koneksi.php';
 
 // Jumlah seluruh buku di keranjang untuk badge navbar.
@@ -45,32 +39,7 @@ if ($kataCari !== '') {
 <body>
 
     <!-- ===== NAVBAR ===== -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">
-                <i class="bi bi-book-half me-2"></i>BukuKu
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="index.php"><i class="bi bi-house me-1"></i>Beranda</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="cart.php">
-                            <i class="bi bi-cart3 me-1"></i>Keranjang
-                            <span class="badge bg-warning text-dark"><?= $jumlahCart ?></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin/index.php"><i class="bi bi-gear me-1"></i>Panel Admin</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <?php require __DIR__ . '/partials/navbar.php'; ?>
 
     <!-- ===== HERO SECTION ===== -->
     <section class="hero-section text-center">
@@ -142,7 +111,7 @@ if ($kataCari !== '') {
                                     <i class="bi bi-eye me-1"></i>Lihat Detail
                                 </a>
                                 <form action="proses_cart.php" method="POST" class="mt-2">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ??= bin2hex(random_bytes(32))) ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                     <input type="hidden" name="aksi" value="tambah">
                                     <input type="hidden" name="id_buku" value="<?= (int) $buku['id'] ?>">
                                     <button type="submit" class="btn btn-warning btn-sm w-100" <?= $buku['stok'] <= 0 ? 'disabled' : '' ?>>

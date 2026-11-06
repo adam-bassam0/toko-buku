@@ -1,8 +1,6 @@
 <?php
 // ============================================
 
-session_start();
-$_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 // File    : admin/index.php
 // Deskripsi: Halaman Panel Admin untuk
 //            mengelola (CRUD) data buku.
@@ -10,7 +8,11 @@ $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 // ============================================
 
 // Path ke koneksi relatif terhadap lokasi file ini (folder admin/)
+require_once '../config/auth.php';
 require_once '../config/koneksi.php';
+
+// Halaman ini hanya untuk admin yang sudah login.
+require_admin('../login.php');
 
 // Ambil semua data buku dari database, urutkan dari yang terbaru
 $result = $koneksi->query("SELECT * FROM buku ORDER BY id DESC");
@@ -29,24 +31,13 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-    <!-- ===== NAVBAR ADMIN ===== -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0f3460;">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold" href="index.php">
-                <i class="bi bi-shield-lock me-2"></i>Admin BukuKu
-            </a>
-            <div class="ms-auto">
-                <a href="../index.php" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-arrow-left me-1"></i>Ke Toko
-                </a>
-            </div>
-        </div>
-    </nav>
+    <!-- ===== NAVBAR ADMIN (sama dengan navbar pelanggan) ===== -->
+    <?php require __DIR__ . '/../partials/navbar_admin.php'; ?>
 
     <!-- ===== KONTEN UTAMA ===== -->
-    <main class="container-fluid px-4 my-4">
+    <main class="container my-4 flex-grow-1">
 
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h4 class="fw-bold mb-0">
@@ -72,6 +63,21 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
         <?php elseif ($pesan === 'hapus_sukses'): ?>
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <i class="bi bi-trash-fill me-2"></i>Buku berhasil dihapus.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($pesan === 'permintaan_tidak_valid'): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-shield-x me-2"></i>Permintaan tidak valid (token CSRF tidak cocok). Silakan coba lagi.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($pesan === 'tidak_ditemukan'): ?>
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>Buku tidak ditemukan.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($pesan === 'hapus_gagal'): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-x-circle me-2"></i>Buku gagal dihapus. Silakan coba lagi.
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
@@ -125,7 +131,7 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
                                             </a>
                                             <!-- Hapus menggunakan POST dan token CSRF. -->
                                             <form action="../proses/proses_hapus.php" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus buku ini?');">
-                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                                 <input type="hidden" name="id" value="<?= (int) $buku['id'] ?>">
                                                 <button type="submit" class="btn btn-danger btn-sm" title="Hapus">
                                                     <i class="bi bi-trash"></i>
@@ -155,6 +161,9 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
         </p>
 
     </main>
+
+    <!-- ===== FOOTER ===== -->
+    <?php require __DIR__ . '/../partials/footer_admin.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/script.js"></script>
