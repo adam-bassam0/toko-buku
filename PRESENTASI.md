@@ -48,13 +48,17 @@ toko-buku/
 │   ├── proses_login.php     # Verifikasi login
 │   ├── proses_register.php  # Pendaftaran akun
 │   ├── proses_logout.php    # Keluar akun
-│   └── proses_checkout.php  # Transaksi pesanan (ACID)
+│   ├── proses_checkout.php  # Transaksi pesanan (ACID)
+│   └── proses_bayar.php     # Konfirmasi pembayaran + upload bukti
 ├── admin/                   # Panel admin, dilindungi require_admin()
+│   ├── index.php            # Data buku
+│   └── pesanan.php          # Monitoring pesanan & pembayaran
 ├── assets/                  # CSS & JS
 ├── index.php                # Katalog + pencarian
 ├── detail.php               # Detail buku
 ├── cart.php                 # Keranjang (session)
-├── checkout.php             # Konfirmasi pesanan
+├── checkout.php             # Konfirmasi pesanan + pilih metode bayar
+├── pembayaran.php           # Instruksi QRIS / transfer + konfirmasi
 ├── pesanan.php              # Riwayat pesanan pelanggan
 ├── login.php / register.php # Autentikasi
 └── proses_cart.php          # Aksi keranjang
@@ -146,9 +150,18 @@ logout       ──► proses_logout.php   ──► session dihapus
 ### Checkout (checkout.php → proses_checkout.php)
 1. Wajib login.
 2. Item & total dihitung ulang dari database.
-3. Semua perubahan dijalankan dalam **satu transaksi ACID** (bagian 7).
-4. Jika sukses: keranjang dikosongkan, pesanan muncul di `pesanan.php`.
-5. Jika gagal: **rollback** — tidak ada pesanan setengah jadi, stok tidak berubah.
+3. Pelanggan memilih metode pembayaran: **QRIS** atau **Transfer Bank**.
+4. Semua perubahan (pesanan + tagihan pembayaran + stok) dijalankan dalam **satu transaksi ACID** (bagian 7).
+5. Jika sukses: diarahkan ke halaman pembayaran; keranjang dikosongkan.
+6. Jika gagal: **rollback** — tidak ada pesanan setengah jadi, stok tidak berubah.
+
+### Pembayaran (pembayaran.php → proses/proses_bayar.php)
+- **QRIS:** menampilkan kode QR berisi kode bayar + nominal; pelanggan menekan "Saya Sudah Membayar".
+- **Transfer:** menampilkan rekening BCA/Mandiri + kode bayar sebagai berita transfer; bisa unggah bukti.
+- Status: `pembayaran.menunggu` → `lunas`, `pesanan.pending` → `dibayar` (dalam satu transaksi).
+- Hanya pemilik pesanan yang bisa membuka & mengonfirmasi (`WHERE user_id = ?`).
+- Upload bukti divalidasi dari isi file (`finfo`), ukuran maksimal 2 MB, nama file diacak.
+- Admin memantau semua pesanan + bukti di `admin/pesanan.php`.
 
 ---
 
@@ -183,6 +196,10 @@ try {
 phpMyAdmin → checkout → pesanan **tidak dibuat**, muncul pesan "Checkout
 dibatalkan: stok tidak mencukupi". Ini membuktikan Atomicity.
 
+> Konfirmasi pembayaran juga memakai transaksi: update `pembayaran` + `pesanan`
+> dibungkus `begin_transaction`/`commit` dengan `FOR UPDATE`, sehingga status
+> tidak pernah setengah berubah.
+
 ---
 
 ## 8. Keamanan yang Diterapkan ⭐
@@ -191,12 +208,13 @@ dibatalkan: stok tidak mencukupi". Ini membuktikan Atomicity.
 |---|---|
 | **SQL Injection** | Semua query berinput memakai `prepare()` + `bind_param()` (login, register, pencarian, detail, keranjang, CRUD admin, checkout, riwayat) |
 | **XSS** | Semua output dibungkus `htmlspecialchars()` |
-| **CSRF** | Token acak per session + `hash_equals()` pada login, register, keranjang, CRUD, checkout, logout |
+| **CSRF** | Token acak per session + `hash_equals()` pada login, register, keranjang, CRUD, checkout, pembayaran, logout |
 | **Password bocor** | Hash bcrypt; password asli tidak pernah disimpan/ditampilkan |
 | **Session fixation** | `session_regenerate_id(true)` setelah login |
 | **Akses tidak sah** | `require_login()` & `require_admin()`; role dicek di server |
 | **Manipulasi harga/ID** | Harga dihitung ulang dari DB; semua ID di-cast `(int)` |
 | **Akses langsung file proses** | Wajib POST; file proses menolak GET |
+| **Upload file berbahaya** | Validasi MIME dari isi file (`finfo`), batas 2 MB, nama file diacak |
 | **Stok minus** | Dibatasi validasi keranjang + syarat `stok >= ?` di transaksi |
 | **Kredensial produksi** | Mode `APP_ENV`: error detail hanya tampil saat `dev` |
 
@@ -246,6 +264,18 @@ J: Snapshot — riwayat pesanan tetap benar walau harga buku berubah di kemudian
 **T: Apa yang terjadi jika dua orang checkout buku terakhir bersamaan?**
 J: Baris buku dikunci `FOR UPDATE`. Transaksi kedua menunggu; setelah stok habis, syarat `stok >= jumlah` gagal → rollback dengan pesan stok tidak cukup. Stok tidak pernah minus.
 
+**T: Bagaimana cara kerja pembayaran QRIS & transfer?**
+J: Saat checkout pelanggan memilih metode. Sistem membuat tagihan di tabel `pembayaran` (status `menunggu`) dengan kode bayar unik. Halaman pembayaran menampilkan QR (QRIS) atau rekening bank (transfer). Setelah pelanggan menekan konfirmasi (opsional upload bukti), status pembayaran menjadi `lunas` dan pesanan menjadi `dibayar` dalam satu transaksi.
+
+**T: Apakah pembayaran benar-benar terhubung ke bank/e-wallet?**
+J: Tidak — ini simulasi untuk pembelajaran. QR berisi kode pesanan, bukan QRIS resmi dari payment gateway. Pada produksi, bagian ini diganti integrasi gateway (Midtrans/Xendit) dan verifikasi otomatis.
+
+**T: Bagaimana mencegah pelanggan melihat pesanan orang lain?**
+J: Setiap query pesanan/pembayaran menyertakan `WHERE user_id = ?` milik session; ID pesanan di URL tidak cukup untuk membuka data orang lain.
+
+**T: Bagaimana keamanan upload bukti transfer?**
+J: Tipe file dicek dari isi (`finfo`), bukan ekstensi; hanya JPG/PNG/WebP; maksimal 2 MB; nama file diacak; disimpan di folder upload dengan `.gitignore`.
+
 **T: Apakah aman untuk produksi?**
 J: Untuk pembelajaran sudah menerapkan fondasi keamanan utama. Produksi perlu HTTPS, rate limiting login, verifikasi email, dan manajemen konfigurasi rahasia.
 
@@ -254,7 +284,7 @@ J: Untuk pembelajaran sudah menerapkan fondasi keamanan utama. Produksi perlu HT
 ## 11. Ide Pengembangan Lanjutan
 
 1. Halaman admin mengelola status pesanan (pending → dibayar → dikirim).
-2. Upload bukti pembayaran / payment gateway.
+2. Integrasi payment gateway resmi (Midtrans/Xendit) untuk verifikasi otomatis.
 3. Verifikasi email & fitur lupa password.
 4. Tabel `kategori` + filter katalog.
 5. Pagination katalog & laporan penjualan.
@@ -264,7 +294,7 @@ J: Untuk pembelajaran sudah menerapkan fondasi keamanan utama. Produksi perlu HT
 
 ## 12. Tips Presentasi (5 menit)
 
-1. **Demo pelanggan (2 menit):** daftar/masuk → cari buku → detail → tambah keranjang → checkout → lihat "Pesanan Saya".
+1. **Demo pelanggan (2 menit):** daftar/masuk → cari buku → detail → tambah keranjang → checkout → bayar QRIS/transfer → lihat "Pesanan Saya" berstatus lunas.
 2. **Demo admin (1 menit):** login admin → tambah buku → edit stok → hapus.
 3. **Demo keamanan (1 menit):** coba login dengan `' OR '1'='1` → gagal; buka `admin/index.php` tanpa login → ditolak.
 4. **Demo ACID (1 menit):** tunjukkan potongan kode transaksi + lakukan skenario rollback stok.

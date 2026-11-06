@@ -13,7 +13,8 @@ Project ini dikembangkan menggunakan PHP Native dan MySQL. Antarmuka menggunakan
 - **Register & Login** — Daftar akun dan masuk sebagai pelanggan (password di-hash bcrypt).
 - **Shopping Cart** — Menambah, mengubah jumlah, dan menghapus buku dari keranjang (dibatasi stok).
 - **Checkout** — Membuat pesanan; stok berkurang otomatis dalam satu transaksi database.
-- **Order History** — Melihat riwayat pesanan milik sendiri.
+- **Pembayaran QRIS & Transfer** — Memilih metode pembayaran, melihat instruksi/QR, lalu konfirmasi pembayaran (upload bukti opsional untuk transfer).
+- **Order History** — Melihat riwayat pesanan + status pembayaran milik sendiri.
 - **Responsive Design** — Tampilan yang menyesuaikan berbagai ukuran layar.
 
 ### Admin
@@ -21,12 +22,14 @@ Project ini dikembangkan menggunakan PHP Native dan MySQL. Antarmuka menggunakan
 - **Add Books** — Menambahkan koleksi buku.
 - **Edit Books** — Memperbarui informasi buku.
 - **Delete Books** — Menghapus koleksi buku.
+- **Monitoring Pesanan** — Melihat semua pesanan, metode pembayaran (QRIS/transfer), status lunas/menunggu, dan bukti transfer.
 - **Role Protection** — Pelanggan tidak bisa membuka halaman admin.
 
 ### Keamanan
 - **Anti SQL Injection** — Semua query yang melibatkan input pengguna memakai *prepared statement*.
 - **Anti XSS** — Output dibungkus `htmlspecialchars()`.
-- **Anti CSRF** — Token acak per session pada semua form yang mengubah data (login, registrasi, keranjang, CRUD admin, checkout, logout).
+- **Anti CSRF** — Token acak per session pada semua form yang mengubah data (login, registrasi, keranjang, CRUD admin, checkout, pembayaran, logout).
+- **Upload Aman** — Bukti pembayaran divalidasi dari isi file (`finfo`), maksimal 2 MB, nama file diacak.
 - **Password Hashing** — `password_hash()` bcrypt + `password_verify()`; tidak pernah menyimpan password asli.
 - **Session Aman** — Cookie `HttpOnly` + `SameSite=Lax`, regenerasi session ID setelah login.
 
@@ -55,8 +58,9 @@ toko-buku/
 │   └── auth.php            # Session, CSRF, login guard, role admin
 │
 ├── database/
-│   ├── schema.sql          # Skema lengkap (buku, users, pesanan, detail_pesanan)
-│   └── migrasi_auth.sql    # Migrasi untuk database yang sudah ada
+│   ├── schema.sql          # Skema lengkap (buku, users, pesanan, detail_pesanan, pembayaran)
+│   ├── migrasi_auth.sql    # Migrasi login/pesanan untuk DB lama
+│   └── migrasi_pembayaran.sql # Migrasi tabel pembayaran untuk DB lama
 │
 ├── partials/
 │   └── navbar.php          # Navbar bersama (menu menyesuaikan status login)
@@ -68,14 +72,19 @@ toko-buku/
 │   ├── proses_login.php    # Verifikasi login
 │   ├── proses_register.php # Pendaftaran akun
 │   ├── proses_logout.php   # Keluar akun
-│   └── proses_checkout.php # Transaksi pesanan (ACID)
+│   ├── proses_checkout.php # Transaksi pesanan (ACID)
+│   └── proses_bayar.php    # Konfirmasi pembayaran + upload bukti
 │
 ├── admin/                  # Panel admin (dilindungi require_admin)
+│   ├── index.php           # Data buku
+│   └── pesanan.php         # Monitoring pesanan & pembayaran
 ├── assets/
+│   └── uploads/bukti/      # Bukti transfer yang diunggah pelanggan
 ├── index.php               # Katalog + pencarian
 ├── detail.php              # Detail buku
 ├── cart.php                # Keranjang belanja
-├── checkout.php            # Konfirmasi pesanan
+├── checkout.php            # Konfirmasi pesanan + pilih metode bayar
+├── pembayaran.php          # Instruksi QRIS / transfer + konfirmasi
 ├── pesanan.php             # Riwayat pesanan pelanggan
 ├── login.php
 ├── register.php
@@ -108,7 +117,7 @@ cd toko-buku
 1. Jalankan Apache dan MySQL melalui XAMPP Control Panel.
 2. Buka phpMyAdmin.
 3. **Instalasi baru:** import file `database/schema.sql`.
-4. **Database yang sudah ada:** import `database/migrasi_auth.sql` (hanya menambah tabel `users`, `pesanan`, `detail_pesanan` + akun contoh, tanpa menghapus data buku).
+4. **Database yang sudah ada:** import `database/migrasi_auth.sql` (tabel login/pesanan), lalu `database/migrasi_pembayaran.sql` (tabel pembayaran). Tidak menghapus data buku.
 5. Sesuaikan konfigurasi koneksi database pada `config/koneksi.php`.
 
 ### 3. Akun Demo
@@ -138,6 +147,30 @@ http://localhost/toko-buku
 ```
 
 *Catatan: Jika username, password, atau nama database MySQL berbeda, sesuaikan `config/koneksi.php`.*
+
+## 💳 Pembayaran (QRIS & Transfer Bank)
+
+Setelah checkout, pelanggan memilih metode pembayaran:
+
+| Metode | Tampilan | Konfirmasi |
+|---|---|---|
+| **QRIS** | Kode QR berisi kode bayar & nominal (simulasi) | Tombol "Saya Sudah Membayar" |
+| **Transfer Bank** | Rekening BCA `1234567890` / Mandiri `9876543210` a.n. BukuKu Store + kode bayar sebagai berita transfer | Tombol + upload bukti (JPG/PNG/WebP, maks. 2 MB) |
+
+**Alur status:**
+```text
+checkout → pesanan.status = 'pending'  → pembayaran.status = 'menunggu'
+konfirmasi → pesanan.status = 'dibayar' → pembayaran.status = 'lunas'
+```
+
+**Keamanan pembayaran:**
+- Halaman & konfirmasi hanya untuk **pemilik pesanan** (`WHERE user_id = ?`).
+- Konfirmasi memakai **POST + CSRF**.
+- Upload bukti divalidasi dari **isi file** (`finfo`), bukan nama file; nama disimpan acak.
+- Update pembayaran + pesanan dilakukan dalam **satu transaksi** (ACID) dengan `FOR UPDATE`.
+- Admin dapat memantau semua pesanan dan bukti transfer di `admin/pesanan.php`.
+
+> ⚠️ Ini pembayaran **simulasi** untuk pembelajaran: tidak terhubung ke payment gateway dan tidak ada uang yang benar-benar berpindah.
 
 ## 🎯 Project Goals
 

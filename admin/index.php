@@ -43,6 +43,9 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
                 <span class="text-white-50 small d-none d-md-inline">
                     <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars(auth_user()['nama']) ?>
                 </span>
+                <a href="pesanan.php" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-receipt me-1"></i>Pesanan
+                </a>
                 <a href="../index.php" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-arrow-left me-1"></i>Ke Toko
                 </a>

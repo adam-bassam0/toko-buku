@@ -134,11 +134,31 @@ foreach ($_SESSION['cart'] ?? [] as $id => $jumlah) {
                         </div>
 
                         <?php if ($items): ?>
-                            <form action="proses/proses_checkout.php" method="POST" class="mt-3"
+                            <form action="proses/proses_checkout.php" method="POST"
                                   onsubmit="return confirm('Buat pesanan sekarang? Stok buku akan dikurangi.');">
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+
+                                <hr>
+                                <h6 class="fw-bold mb-2">Metode Pembayaran</h6>
+
+                                <div class="form-check border rounded-3 p-3 mb-2">
+                                    <input class="form-check-input" type="radio" name="metode" id="metode-qris" value="qris" checked>
+                                    <label class="form-check-label w-100" for="metode-qris">
+                                        <i class="bi bi-qr-code me-1 text-primary"></i><strong>QRIS</strong>
+                                        <span class="d-block small text-muted">Scan kode QR dengan aplikasi e-wallet / mobile banking.</span>
+                                    </label>
+                                </div>
+
+                                <div class="form-check border rounded-3 p-3 mb-3">
+                                    <input class="form-check-input" type="radio" name="metode" id="metode-transfer" value="transfer">
+                                    <label class="form-check-label w-100" for="metode-transfer">
+                                        <i class="bi bi-bank me-1 text-success"></i><strong>Transfer Bank</strong>
+                                        <span class="d-block small text-muted">Transfer ke rekening BCA / Mandiri, lalu konfirmasi.</span>
+                                    </label>
+                                </div>
+
                                 <button type="submit" class="btn btn-success w-100 fw-bold">
-                                    <i class="bi bi-check2-circle me-1"></i>Buat Pesanan
+                                    <i class="bi bi-check2-circle me-1"></i>Buat Pesanan & Lanjut Bayar
                                 </button>
                             </form>
                         <?php endif; ?>

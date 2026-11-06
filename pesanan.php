@@ -14,8 +14,15 @@ require_login('login.php');
 
 $user = auth_user();
 
-// Ambil header pesanan milik user ini.
-$stmt = $koneksi->prepare('SELECT id, total, status, created_at FROM pesanan WHERE user_id = ? ORDER BY id DESC');
+// Ambil header pesanan + status pembayaran milik user ini.
+$stmt = $koneksi->prepare(
+    'SELECT p.id, p.total, p.status, p.created_at,
+            b.metode, b.status AS status_bayar, b.kode_bayar
+     FROM pesanan p
+     LEFT JOIN pembayaran b ON b.pesanan_id = p.id
+     WHERE p.user_id = ?
+     ORDER BY p.id DESC'
+);
 $stmt->bind_param('i', $user['id']);
 $stmt->execute();
 $pesananResult = $stmt->get_result();
@@ -96,10 +103,30 @@ $warnaStatus = [
                             <span class="text-muted small ms-2">
                                 <?= date('d M Y, H:i', strtotime($pesanan['created_at'])) ?>
                             </span>
+                            <?php if (!empty($pesanan['metode'])): ?>
+                                <span class="badge bg-light text-dark border ms-1">
+                                    <i class="bi <?= $pesanan['metode'] === 'qris' ? 'bi-qr-code' : 'bi-bank' ?> me-1"></i>
+                                    <?= $pesanan['metode'] === 'qris' ? 'QRIS' : 'Transfer' ?>
+                                </span>
+                            <?php endif; ?>
                         </div>
-                        <span class="badge bg-<?= $warnaStatus[$pesanan['status']] ?? 'secondary' ?>">
-                            <?= htmlspecialchars(ucfirst($pesanan['status'])) ?>
-                        </span>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="badge bg-<?= $warnaStatus[$pesanan['status']] ?? 'secondary' ?>">
+                                <?= htmlspecialchars(ucfirst($pesanan['status'])) ?>
+                            </span>
+
+                            <?php if (($pesanan['status_bayar'] ?? '') === 'lunas'): ?>
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Lunas</span>
+                                <a href="pembayaran.php?pesanan=<?= (int) $pesanan['id'] ?>" class="btn btn-outline-success btn-sm">
+                                    Lihat Pembayaran
+                                </a>
+                            <?php elseif (!empty($pesanan['metode'])): ?>
+                                <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Menunggu Pembayaran</span>
+                                <a href="pembayaran.php?pesanan=<?= (int) $pesanan['id'] ?>" class="btn btn-warning btn-sm fw-bold">
+                                    <i class="bi bi-credit-card me-1"></i>Bayar Sekarang
+                                </a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">

@@ -25,6 +25,14 @@ csrf_check($_POST['csrf_token'] ?? null, '../cart.php');
 
 $user = auth_user();
 
+// Metode pembayaran hanya boleh salah satu dari dua nilai ini.
+$metode = $_POST['metode'] ?? '';
+if (!in_array($metode, ['qris', 'transfer'], true)) {
+    flash('danger', 'Metode pembayaran tidak valid.');
+    header('Location: ../checkout.php');
+    exit;
+}
+
 if (empty($_SESSION['cart'])) {
     flash('warning', 'Keranjang masih kosong.');
     header('Location: ../cart.php');
@@ -97,7 +105,24 @@ try {
     $pesananId = (int) $koneksi->insert_id;
     $stmtPesanan->close();
 
-    // ---------- Fase 3: rincian pesanan + kurangi stok ----------
+    // ---------- Fase 3: buat tagihan pembayaran ----------
+    $kodeBayar   = 'BK-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
+    $statusBayar = 'menunggu';
+
+    $stmtBayar = $koneksi->prepare(
+        'INSERT INTO pembayaran (pesanan_id, metode, jumlah, status, kode_bayar)
+         VALUES (?, ?, ?, ?, ?)'
+    );
+    if (!$stmtBayar) {
+        throw new RuntimeException('Gagal menyiapkan data pembayaran.');
+    }
+    $stmtBayar->bind_param('isdss', $pesananId, $metode, $total, $statusBayar, $kodeBayar);
+    if (!$stmtBayar->execute()) {
+        throw new RuntimeException('Gagal membuat tagihan pembayaran.');
+    }
+    $stmtBayar->close();
+
+    // ---------- Fase 4: rincian pesanan + kurangi stok ----------
     $stmtDetail = $koneksi->prepare(
         'INSERT INTO detail_pesanan (pesanan_id, buku_id, judul, harga, jumlah, subtotal)
          VALUES (?, ?, ?, ?, ?, ?)'
@@ -139,8 +164,8 @@ try {
     $_SESSION['cart'] = [];
     csrf_rotate();
 
-    flash('success', 'Pesanan #' . $pesananId . ' berhasil dibuat. Total Rp ' . number_format($total, 0, ',', '.') . '.');
-    header('Location: ../pesanan.php');
+    flash('success', 'Pesanan #' . $pesananId . ' berhasil dibuat. Silakan selesaikan pembayaran.');
+    header('Location: ../pembayaran.php?pesanan=' . $pesananId);
     exit;
 
 } catch (Throwable $e) {
