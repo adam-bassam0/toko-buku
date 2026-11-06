@@ -1,0 +1,25 @@
+# ===== Sistem Operasi =====
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ===== Editor / IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== Log & file sementara =====
+*.log
+*.tmp
+error/
+tmp/
+
+# ===== Konfigurasi lokal (jangan commit kredensial asli) =====
+# config/koneksi.php sengaja di-commit untuk project pembelajaran.
+# Jika nanti ada kredensial produksi, pindahkan ke file berikut:
+config/koneksi_local.php
+
+# ===== Dependency (jika nanti pakai Composer/npm) =====
+vendor/
+node_modules/
