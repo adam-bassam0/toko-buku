@@ -2,15 +2,29 @@
 // ============================================
 // File    : proses/proses_hapus.php
 // Deskripsi: Memproses penghapusan data buku.
-//            Menerima ID via parameter GET,
+//            Menerima ID via parameter POST,
 //            lalu DELETE dari database.
 // ============================================
 
+require_once __DIR__ . '/../config/auth.php';
+require_admin('../login.php');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ../admin/index.php");
+    exit;
+}
+
+$tokenForm = $_POST['csrf_token'] ?? '';
+$tokenSesi = $_SESSION['csrf_token'] ?? '';
+if (!$tokenSesi || !hash_equals($tokenSesi, $tokenForm)) {
+    header("Location: ../admin/index.php?pesan=permintaan_tidak_valid");
+    exit;
+}
+
 require_once '../config/koneksi.php';
 
-// Ambil dan validasi ID dari parameter URL
-// Contoh URL: proses_hapus.php?id=5
-$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+// Ambil dan validasi ID dari request POST.
+$id = (int) ($_POST['id'] ?? 0);
 
 // Pastikan ID valid sebelum proses hapus
 if ($id <= 0) {
@@ -49,4 +63,3 @@ if ($stmt->affected_rows > 0) {
 $stmt->close();
 $koneksi->close();
 exit;
-

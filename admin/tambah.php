@@ -1,5 +1,11 @@
 <?php
 // ============================================
+require_once '../config/auth.php';
+
+require_admin('../login.php');
+
+// Pesan error dari proses (jika ada).
+$error = $_GET['error'] ?? '';
 // File    : admin/tambah.php
 // Deskripsi: Form HTML untuk menginput
 //            data buku baru.
@@ -42,11 +48,21 @@
                         <i class="bi bi-plus-circle-fill me-2 text-success"></i>Tambah Buku Baru
                     </h4>
 
+                    <?php if ($error === 'kolom_wajib'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Judul, penulis, dan penerbit wajib diisi dengan benar.</div>
+                    <?php elseif ($error === 'csrf'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-shield-x me-2"></i>Permintaan tidak valid (token CSRF). Silakan coba lagi.</div>
+                    <?php elseif ($error === 'db_error'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-x-circle me-2"></i>Gagal menyimpan ke database.</div>
+                    <?php endif; ?>
+
                     <!--
                         Form dikirim via POST ke proses_tambah.php.
                         POST lebih aman dari GET untuk pengiriman data.
                     -->
                     <form action="../proses/proses_tambah.php" method="POST">
+
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
 
                         <!-- Judul -->
                         <div class="mb-3">
@@ -124,4 +140,3 @@
     <script src="../assets/js/script.js"></script>
 </body>
 </html>
-

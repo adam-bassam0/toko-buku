@@ -1,5 +1,8 @@
 <?php
 // ============================================
+
+require_once __DIR__ . '/../config/auth.php';
+require_admin('../login.php');
 // File    : proses/proses_tambah.php
 // Deskripsi: Memproses data dari form tambah buku.
 //            Menerima data POST, validasi,
@@ -9,6 +12,13 @@
 // Skrip ini hanya boleh dipanggil via POST, bukan diakses langsung via browser
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../admin/tambah.php");
+    exit;
+}
+
+$tokenForm = $_POST['csrf_token'] ?? '';
+$tokenSesi = $_SESSION['csrf_token'] ?? '';
+if (!$tokenSesi || !hash_equals($tokenSesi, $tokenForm)) {
+    header("Location: ../admin/tambah.php?error=csrf");
     exit;
 }
 
@@ -25,7 +35,11 @@ $deskripsi = trim($_POST['deskripsi'] ?? '');
 $cover    = trim($_POST['cover']    ?? '');
 
 // --- Validasi Sederhana: Pastikan field wajib tidak kosong ---
-if (empty($judul) || empty($penulis) || empty($penerbit)) {
+if (
+    $judul === '' || $penulis === '' || $penerbit === '' ||
+    $harga < 0 || $stok < 0 ||
+    ($cover !== '' && filter_var($cover, FILTER_VALIDATE_URL) === false)
+) {
     // Redirect kembali ke form jika validasi gagal
     header("Location: ../admin/tambah.php?error=kolom_wajib");
     exit;
@@ -40,7 +54,7 @@ $stmt = $koneksi->prepare(
 
 // Ikat parameter: s=string, i=integer
 // Urutan tipe harus sesuai dengan urutan placeholder "?"
-$stmt->bind_param("sssiisd", $judul, $penulis, $penerbit, $harga, $stok, $deskripsi, $cover);
+$stmt->bind_param("sssiiss", $judul, $penulis, $penerbit, $harga, $stok, $deskripsi, $cover);
 
 // Jalankan query
 if ($stmt->execute()) {
@@ -55,4 +69,3 @@ if ($stmt->execute()) {
 $stmt->close();
 $koneksi->close();
 exit;
-

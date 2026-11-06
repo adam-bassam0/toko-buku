@@ -1,5 +1,11 @@
 <?php
 // ============================================
+require_once '../config/auth.php';
+
+require_admin('../login.php');
+
+// Pesan error dari proses (jika ada).
+$error = $_GET['error'] ?? '';
 // File    : admin/edit.php
 // Deskripsi: Form untuk mengedit data buku.
 //            Data lama diambil dari database
@@ -68,6 +74,14 @@ $buku = $result->fetch_assoc();
                     <!-- Tampilkan judul buku yang sedang diedit -->
                     <p class="text-muted mb-4">Mengedit: <em><?= htmlspecialchars($buku['judul']) ?></em></p>
 
+                    <?php if ($error === 'kolom_wajib'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Judul, penulis, dan penerbit wajib diisi dengan benar.</div>
+                    <?php elseif ($error === 'csrf'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-shield-x me-2"></i>Permintaan tidak valid (token CSRF). Silakan coba lagi.</div>
+                    <?php elseif ($error === 'db_error'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-x-circle me-2"></i>Gagal memperbarui database.</div>
+                    <?php endif; ?>
+
                     <!--
                         Form dikirim via POST ke proses_edit.php.
                         ID disertakan dalam hidden input agar proses tahu
@@ -75,6 +89,7 @@ $buku = $result->fetch_assoc();
                     -->
                     <form action="../proses/proses_edit.php" method="POST">
 
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                         <!-- Input tersembunyi untuk menyimpan ID buku -->
                         <input type="hidden" name="id" value="<?= $buku['id'] ?>">
 
@@ -145,7 +160,7 @@ $buku = $result->fetch_assoc();
                                 value="<?= htmlspecialchars($buku['cover'] ?? '') ?>"
                                 oninput="pratinjauCover()"
                             >
-                            <div class="form-text">Biarkan kosong jika tidak ingin mengubah cover.</div>
+                            <div class="form-text">Kosongkan jika ingin menghapus cover.</div>
                             <!-- Pratinjau cover yang sudah ada -->
                             <img
                                 id="preview-cover"
@@ -183,4 +198,3 @@ $buku = $result->fetch_assoc();
     <script src="../assets/js/script.js"></script>
 </body>
 </html>
-
