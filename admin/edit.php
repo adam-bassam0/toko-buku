@@ -48,22 +48,13 @@ $buku = $result->fetch_assoc();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body class="d-flex flex-column min-vh-100">
 
-    <!-- ===== NAVBAR ADMIN ===== -->
-    <nav class="navbar navbar-dark shadow-sm" style="background-color: #0f3460;">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold" href="index.php">
-                <i class="bi bi-shield-lock me-2"></i>Admin BukuKu
-            </a>
-            <a href="index.php" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>Kembali
-            </a>
-        </div>
-    </nav>
+    <!-- ===== NAVBAR ADMIN (sama dengan navbar pelanggan) ===== -->
+    <?php require __DIR__ . '/../partials/navbar_admin.php'; ?>
 
     <!-- ===== KONTEN FORM EDIT ===== -->
-    <main class="container my-5">
+    <main class="container my-5 flex-grow-1">
         <div class="row justify-content-center">
             <div class="col-lg-8">
 
@@ -193,6 +184,9 @@ $buku = $result->fetch_assoc();
             </div>
         </div>
     </main>
+
+    <!-- ===== FOOTER ===== -->
+    <?php require __DIR__ . '/../partials/footer_admin.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/script.js"></script>

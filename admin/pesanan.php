@@ -40,31 +40,12 @@ $warnaPesanan = [
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body class="d-flex flex-column min-vh-100">
 
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0f3460;">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold" href="index.php">
-                <i class="bi bi-shield-lock me-2"></i>Admin BukuKu
-            </a>
-            <div class="ms-auto d-flex align-items-center gap-2">
-                <a href="index.php" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-journal-text me-1"></i>Data Buku
-                </a>
-                <a href="../index.php" class="btn btn-outline-light btn-sm">
-                    <i class="bi bi-arrow-left me-1"></i>Ke Toko
-                </a>
-                <form action="../proses/proses_logout.php" method="POST" class="d-inline">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
-                    <button type="submit" class="btn btn-outline-warning btn-sm">
-                        <i class="bi bi-box-arrow-right me-1"></i>Keluar
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    <!-- ===== NAVBAR ADMIN (sama dengan navbar pelanggan) ===== -->
+    <?php require __DIR__ . '/../partials/navbar_admin.php'; ?>
 
-    <main class="container-fluid px-4 my-4">
+    <main class="container my-4 flex-grow-1">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h4 class="fw-bold mb-0"><i class="bi bi-receipt me-2"></i>Pesanan Masuk</h4>
             <span class="badge bg-secondary"><?= $result->num_rows ?> pesanan</span>
@@ -77,7 +58,7 @@ $warnaPesanan = [
         <div class="card shadow-sm border-0 rounded-3">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover table-bordered align-middle mb-0">
+                    <table class="table table-hover table-bordered table-admin align-middle mb-0">
                         <thead>
                             <tr>
                                 <th width="70" class="text-center">#</th>
@@ -155,6 +136,9 @@ $warnaPesanan = [
             </div>
         </div>
     </main>
+
+    <!-- ===== FOOTER ===== -->
+    <?php require __DIR__ . '/../partials/footer_admin.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
