@@ -103,7 +103,7 @@ Pastikan sudah menginstal:
 ### 1. Clone Repository
 
 ```bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/adam-bassam0/toko-buku.git
 ```
 
 Masuk ke direktori project:
