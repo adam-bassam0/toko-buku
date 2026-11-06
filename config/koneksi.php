@@ -34,9 +34,8 @@ if ($koneksi->connect_error) {
     if (APP_ENV === 'dev') {
         die("Koneksi database GAGAL: " . $koneksi->connect_error);
     }
-    die("Koneksi database gagal. Pastikan MySQL XAMPP sudah aktif dan database tersedia.");
+    die("Koneksi database gagal. Pastikan MySQL XAMPP sudah aktif dan database '" . DB_NAME . "' tersedia.");
 }
 
 // Atur encoding karakter agar mendukung karakter UTF-8 (huruf Indonesia, emoji, dsb.)
 $koneksi->set_charset("utf8mb4");
-

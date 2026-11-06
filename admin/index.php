@@ -1,5 +1,8 @@
 <?php
 // ============================================
+
+session_start();
+$_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 // File    : admin/index.php
 // Deskripsi: Halaman Panel Admin untuk
 //            mengelola (CRUD) data buku.
@@ -120,14 +123,14 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
                                             <a href="edit.php?id=<?= $buku['id'] ?>" class="btn btn-warning btn-sm me-1" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <!-- Tombol Hapus: panggil fungsi JS untuk konfirmasi sebelum hapus -->
-                                            <button
-                                                onclick="konfirmasiHapus('../proses/proses_hapus.php?id=<?= $buku['id'] ?>')"
-                                                class="btn btn-danger btn-sm"
-                                                title="Hapus"
-                                            >
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                            <!-- Hapus menggunakan POST dan token CSRF. -->
+                                            <form action="../proses/proses_hapus.php" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus buku ini?');">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                                <input type="hidden" name="id" value="<?= (int) $buku['id'] ?>">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>
@@ -157,4 +160,3 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
     <script src="../assets/js/script.js"></script>
 </body>
 </html>
-

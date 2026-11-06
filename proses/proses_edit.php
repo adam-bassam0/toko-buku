@@ -1,5 +1,7 @@
 <?php
 // ============================================
+
+session_start();
 // File    : proses/proses_edit.php
 // Deskripsi: Memproses data dari form edit buku.
 //            Menerima data POST, validasi,
@@ -9,6 +11,13 @@
 // Pastikan request menggunakan metode POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../admin/index.php");
+    exit;
+}
+
+$tokenForm = $_POST['csrf_token'] ?? '';
+$tokenSesi = $_SESSION['csrf_token'] ?? '';
+if (!$tokenSesi || !hash_equals($tokenSesi, $tokenForm)) {
+    header("Location: ../admin/index.php?pesan=permintaan_tidak_valid");
     exit;
 }
 
@@ -34,15 +43,19 @@ $deskripsi = trim($_POST['deskripsi'] ?? '');
 $cover     = trim($_POST['cover']     ?? '');
 
 // --- Validasi: Field wajib tidak boleh kosong ---
-if (empty($judul) || empty($penulis) || empty($penerbit)) {
+if (
+    $judul === '' || $penulis === '' || $penerbit === '' ||
+    $harga < 0 || $stok < 0 ||
+    ($cover !== '' && filter_var($cover, FILTER_VALIDATE_URL) === false)
+) {
     header("Location: ../admin/edit.php?id={$id}&error=kolom_wajib");
     exit;
 }
 
 // --- Eksekusi Query UPDATE menggunakan Prepared Statement ---
 // Klausa WHERE id = ? memastikan HANYA buku dengan ID tersebut yang diupdate
-// Format string bind_param: s=string, i=integer, d=double
-// "sssiisd" + "i" (untuk id) = "sssiisdi"
+// Format string bind_param: s=string, i=integer.
+// "sssiissi": judul, penulis, penerbit, harga, stok, deskripsi, cover, id
 $stmt = $koneksi->prepare(
     "UPDATE buku
      SET judul = ?, penulis = ?, penerbit = ?, harga = ?, stok = ?, deskripsi = ?, cover = ?

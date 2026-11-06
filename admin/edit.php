@@ -1,5 +1,8 @@
 <?php
 // ============================================
+
+session_start();
+$_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 // File    : admin/edit.php
 // Deskripsi: Form untuk mengedit data buku.
 //            Data lama diambil dari database
@@ -75,6 +78,7 @@ $buku = $result->fetch_assoc();
                     -->
                     <form action="../proses/proses_edit.php" method="POST">
 
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
                         <!-- Input tersembunyi untuk menyimpan ID buku -->
                         <input type="hidden" name="id" value="<?= $buku['id'] ?>">
 
@@ -145,7 +149,7 @@ $buku = $result->fetch_assoc();
                                 value="<?= htmlspecialchars($buku['cover'] ?? '') ?>"
                                 oninput="pratinjauCover()"
                             >
-                            <div class="form-text">Biarkan kosong jika tidak ingin mengubah cover.</div>
+                            <div class="form-text">Kosongkan jika ingin menghapus cover.</div>
                             <!-- Pratinjau cover yang sudah ada -->
                             <img
                                 id="preview-cover"
@@ -183,4 +187,3 @@ $buku = $result->fetch_assoc();
     <script src="../assets/js/script.js"></script>
 </body>
 </html>
-
