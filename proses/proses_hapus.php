@@ -6,7 +6,8 @@
 //            lalu DELETE dari database.
 // ============================================
 
-session_start();
+require_once __DIR__ . '/../config/auth.php';
+require_admin('../login.php');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../admin/index.php");

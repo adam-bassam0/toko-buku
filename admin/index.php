@@ -1,8 +1,6 @@
 <?php
 // ============================================
 
-session_start();
-$_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 // File    : admin/index.php
 // Deskripsi: Halaman Panel Admin untuk
 //            mengelola (CRUD) data buku.
@@ -10,7 +8,11 @@ $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 // ============================================
 
 // Path ke koneksi relatif terhadap lokasi file ini (folder admin/)
+require_once '../config/auth.php';
 require_once '../config/koneksi.php';
+
+// Halaman ini hanya untuk admin yang sudah login.
+require_admin('../login.php');
 
 // Ambil semua data buku dari database, urutkan dari yang terbaru
 $result = $koneksi->query("SELECT * FROM buku ORDER BY id DESC");
@@ -37,10 +39,19 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
             <a class="navbar-brand fw-bold" href="index.php">
                 <i class="bi bi-shield-lock me-2"></i>Admin BukuKu
             </a>
-            <div class="ms-auto">
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <span class="text-white-50 small d-none d-md-inline">
+                    <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars(auth_user()['nama']) ?>
+                </span>
                 <a href="../index.php" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-arrow-left me-1"></i>Ke Toko
                 </a>
+                <form action="../proses/proses_logout.php" method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+                    <button type="submit" class="btn btn-outline-warning btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i>Keluar
+                    </button>
+                </form>
             </div>
         </div>
     </nav>
@@ -72,6 +83,21 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
         <?php elseif ($pesan === 'hapus_sukses'): ?>
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <i class="bi bi-trash-fill me-2"></i>Buku berhasil dihapus.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($pesan === 'permintaan_tidak_valid'): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-shield-x me-2"></i>Permintaan tidak valid (token CSRF tidak cocok). Silakan coba lagi.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($pesan === 'tidak_ditemukan'): ?>
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>Buku tidak ditemukan.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($pesan === 'hapus_gagal'): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-x-circle me-2"></i>Buku gagal dihapus. Silakan coba lagi.
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
@@ -125,7 +151,7 @@ $pesan = isset($_GET['pesan']) ? $_GET['pesan'] : '';
                                             </a>
                                             <!-- Hapus menggunakan POST dan token CSRF. -->
                                             <form action="../proses/proses_hapus.php" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus buku ini?');">
-                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                                 <input type="hidden" name="id" value="<?= (int) $buku['id'] ?>">
                                                 <button type="submit" class="btn btn-danger btn-sm" title="Hapus">
                                                     <i class="bi bi-trash"></i>

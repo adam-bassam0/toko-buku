@@ -20,6 +20,54 @@ CREATE TABLE IF NOT EXISTS buku (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 2b. Tabel users (akun pelanggan & admin)
+--     password menyimpan hasil password_hash() (bcrypt), BUKAN teks asli.
+CREATE TABLE IF NOT EXISTS users (
+    id         INT(11)      NOT NULL AUTO_INCREMENT,
+    nama       VARCHAR(100) NOT NULL,
+    email      VARCHAR(150) NOT NULL,
+    password   VARCHAR(255) NOT NULL,
+    role       ENUM('user','admin') NOT NULL DEFAULT 'user',
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_users_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2c. Tabel pesanan (header transaksi checkout)
+--     Relasi 1 user -> banyak pesanan. ON DELETE RESTRICT: user yang
+--     punya riwayat pesanan tidak bisa dihapus sembarangan.
+CREATE TABLE IF NOT EXISTS pesanan (
+    id         INT(11)      NOT NULL AUTO_INCREMENT,
+    user_id    INT(11)      NOT NULL,
+    total      DECIMAL(12,0) NOT NULL DEFAULT 0,
+    status     ENUM('pending','dibayar','dikirim','selesai','batal')
+               NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_pesanan_user (user_id),
+    CONSTRAINT fk_pesanan_user FOREIGN KEY (user_id)
+        REFERENCES users (id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2d. Tabel detail_pesanan (rincian item per pesanan)
+--     judul & harga disalin (snapshot) supaya riwayat pesanan tetap utuh
+--     walaupun data buku diubah/dihapus admin di kemudian hari.
+CREATE TABLE IF NOT EXISTS detail_pesanan (
+    id         INT(11)       NOT NULL AUTO_INCREMENT,
+    pesanan_id INT(11)       NOT NULL,
+    buku_id    INT(11)       DEFAULT NULL,
+    judul      VARCHAR(150)  NOT NULL,
+    harga      DECIMAL(12,0) NOT NULL,
+    jumlah     INT(11)       NOT NULL,
+    subtotal   DECIMAL(12,0) NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_detail_pesanan (pesanan_id),
+    CONSTRAINT fk_detail_pesanan FOREIGN KEY (pesanan_id)
+        REFERENCES pesanan (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_detail_buku FOREIGN KEY (buku_id)
+        REFERENCES buku (id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 3. Data contoh (INSERT INTO)
 INSERT INTO buku (judul, penulis, penerbit, harga, stok, deskripsi, cover) VALUES
 (
@@ -541,3 +589,14 @@ INSERT INTO buku (judul, penulis, penerbit, harga, stok, deskripsi, cover) VALUE
     'Auggie, anak berwajah tidak biasa, masuk sekolah umum untuk pertama kalinya. Kisah hangat tentang persahabatan, keberanian, dan kebaikan.',
     'https://covers.openlibrary.org/b/isbn/9780375869020-L.jpg'
 );
+
+-- ============================================
+-- 4. Akun contoh (password sudah di-hash bcrypt)
+--    Admin     : admin@bukuku.test / admin123
+--    Pelanggan : budi@bukuku.test  / user123
+--    INSERT IGNORE agar import ulang tidak error duplikat.
+-- ============================================
+INSERT IGNORE INTO users (nama, email, password, role) VALUES
+('Admin BukuKu', 'admin@bukuku.test', '$2y$10$AdwFFHLktZ11s/kyNKZi0.rLuCboqmhxrrFknVG60iz3qFMdbMMPW', 'admin'),
+('Budi Santoso', 'budi@bukuku.test', '$2y$10$/Vb9/3NJ8RWI2SZ2dQPSiOuCr2xVI2Ehl7gBO2EJDqmU88FTQVX4W', 'user');
+

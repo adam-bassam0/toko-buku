@@ -1,8 +1,11 @@
 <?php
 // ============================================
+require_once '../config/auth.php';
 
-session_start();
-$_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
+require_admin('../login.php');
+
+// Pesan error dari proses (jika ada).
+$error = $_GET['error'] ?? '';
 // File    : admin/edit.php
 // Deskripsi: Form untuk mengedit data buku.
 //            Data lama diambil dari database
@@ -71,6 +74,14 @@ $buku = $result->fetch_assoc();
                     <!-- Tampilkan judul buku yang sedang diedit -->
                     <p class="text-muted mb-4">Mengedit: <em><?= htmlspecialchars($buku['judul']) ?></em></p>
 
+                    <?php if ($error === 'kolom_wajib'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Judul, penulis, dan penerbit wajib diisi dengan benar.</div>
+                    <?php elseif ($error === 'csrf'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-shield-x me-2"></i>Permintaan tidak valid (token CSRF). Silakan coba lagi.</div>
+                    <?php elseif ($error === 'db_error'): ?>
+                        <div class="alert alert-danger"><i class="bi bi-x-circle me-2"></i>Gagal memperbarui database.</div>
+                    <?php endif; ?>
+
                     <!--
                         Form dikirim via POST ke proses_edit.php.
                         ID disertakan dalam hidden input agar proses tahu
@@ -78,7 +89,7 @@ $buku = $result->fetch_assoc();
                     -->
                     <form action="../proses/proses_edit.php" method="POST">
 
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                         <!-- Input tersembunyi untuk menyimpan ID buku -->
                         <input type="hidden" name="id" value="<?= $buku['id'] ?>">
 

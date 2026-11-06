@@ -1,6 +1,6 @@
 <?php
 
-session_start();
+require_once 'config/auth.php';
 require_once 'config/koneksi.php';
 $jumlahCart = array_sum($_SESSION['cart'] ?? []);
 
@@ -42,26 +42,7 @@ $buku = $result->fetch_assoc();
 <body>
 
     <!-- ===== NAVBAR ===== -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">
-                <i class="bi bi-book-half me-2"></i>BukuKu
-            </a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php"><i class="bi bi-house me-1"></i>Beranda</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="cart.php"><i class="bi bi-cart3 me-1"></i>Keranjang <span class="badge bg-warning text-dark"><?= $jumlahCart ?></span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin/index.php"><i class="bi bi-gear me-1"></i>Panel Admin</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <?php require __DIR__ . '/partials/navbar.php'; ?>
 
     <!-- ===== KONTEN DETAIL ===== -->
     <main class="container my-5">
@@ -135,16 +116,18 @@ $buku = $result->fetch_assoc();
                                 <i class="bi bi-arrow-left me-1"></i>Kembali ke Katalog
                             </a>
                             <form action="proses_cart.php" method="POST" class="d-inline">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ??= bin2hex(random_bytes(32))) ?>">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                 <input type="hidden" name="aksi" value="tambah">
                                 <input type="hidden" name="id_buku" value="<?= (int) $buku['id'] ?>">
                                 <button type="submit" class="btn btn-warning" <?= $buku['stok'] <= 0 ? 'disabled' : '' ?>>
                                     <i class="bi bi-cart-plus me-1"></i><?= $buku['stok'] > 0 ? 'Tambah ke Keranjang' : 'Stok Habis' ?>
                                 </button>
                             </form>
-                            <a href="admin/edit.php?id=<?= $buku['id'] ?>" class="btn btn-outline-dark">
-                                <i class="bi bi-pencil me-1"></i>Edit Buku
-                            </a>
+                            <?php if (auth_is_admin()): ?>
+                                <a href="admin/edit.php?id=<?= $buku['id'] ?>" class="btn btn-outline-dark">
+                                    <i class="bi bi-pencil me-1"></i>Edit Buku
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

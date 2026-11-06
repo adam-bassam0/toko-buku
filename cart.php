@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'config/auth.php';
 require_once 'config/koneksi.php';
 
 $_SESSION['cart'] ??= [];
@@ -47,15 +47,7 @@ $jumlahCart = array_sum($_SESSION['cart']);
     <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
-    <div class="container">
-        <a class="navbar-brand" href="index.php"><i class="bi bi-book-half me-2"></i>BukuKu</a>
-        <div class="navbar-nav ms-auto flex-row gap-3">
-            <a class="nav-link" href="index.php"><i class="bi bi-house me-1"></i>Beranda</a>
-            <a class="nav-link active" href="cart.php"><i class="bi bi-cart3 me-1"></i>Keranjang <span class="badge bg-warning text-dark"><?= $jumlahCart ?></span></a>
-        </div>
-    </div>
-</nav>
+<?php require __DIR__ . '/partials/navbar.php'; ?>
 
 <main class="container my-5">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
@@ -97,7 +89,7 @@ $jumlahCart = array_sum($_SESSION['cart']);
                                     <td>Rp <?= number_format((float) $item['harga'], 0, ',', '.') ?></td>
                                     <td>
                                         <form action="proses_cart.php" method="POST" class="d-flex gap-1">
-                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                             <input type="hidden" name="aksi" value="ubah">
                                             <input type="hidden" name="id_buku" value="<?= (int) $item['id'] ?>">
                                             <input type="number" name="jumlah" class="form-control form-control-sm" min="1" max="<?= (int) $item['stok'] ?>" value="<?= (int) $item['jumlah'] ?>" aria-label="Jumlah <?= htmlspecialchars($item['judul']) ?>">
@@ -107,7 +99,7 @@ $jumlahCart = array_sum($_SESSION['cart']);
                                     <td class="fw-semibold">Rp <?= number_format($item['subtotal'], 0, ',', '.') ?></td>
                                     <td>
                                         <form action="proses_cart.php" method="POST">
-                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                             <input type="hidden" name="aksi" value="hapus">
                                             <input type="hidden" name="id_buku" value="<?= (int) $item['id'] ?>">
                                             <button class="btn btn-outline-danger btn-sm" type="submit" title="Hapus buku"><i class="bi bi-trash"></i></button>
@@ -120,7 +112,7 @@ $jumlahCart = array_sum($_SESSION['cart']);
                     </div>
                 </div>
                 <form action="proses_cart.php" method="POST" class="mt-3" onsubmit="return confirm('Kosongkan seluruh keranjang?')">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                     <input type="hidden" name="aksi" value="kosongkan">
                     <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash me-1"></i>Kosongkan Keranjang</button>
                 </form>
@@ -132,7 +124,15 @@ $jumlahCart = array_sum($_SESSION['cart']);
                         <div class="d-flex justify-content-between mb-2"><span class="text-muted">Total item</span><span><?= $jumlahCart ?> buku</span></div>
                         <hr>
                         <div class="d-flex justify-content-between align-items-center"><strong>Total</strong><strong class="text-primary fs-5">Rp <?= number_format($total, 0, ',', '.') ?></strong></div>
-                        <p class="small text-muted mt-3 mb-0">Checkout belum tersedia. Keranjang ini disimpan sementara selama sesi browser berlangsung.</p>
+
+                        <a href="checkout.php" class="btn btn-success w-100 fw-bold mt-3">
+                            <i class="bi bi-bag-check me-1"></i>Checkout
+                        </a>
+
+                        <p class="small text-muted mt-3 mb-0">
+                            Keranjang disimpan sementara selama sesi browser berlangsung.
+                            Checkout memerlukan akun (login) agar pesanan tercatat.
+                        </p>
                     </div>
                 </div>
             </div>
