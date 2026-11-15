@@ -1,42 +1,31 @@
-
 /**
- * Fungsi konfirmasi sebelum menghapus data.
- * Dipanggil dari atribut onclick pada tombol Hapus.
- * @param {string} url - URL tujuan proses hapus
+ * BukuKu - Global Interactive Scripts
  */
-function konfirmasiHapus(url) {
-    // Tampilkan dialog konfirmasi bawaan browser
-    if (confirm("Apakah Anda yakin ingin menghapus buku ini?\nTindakan ini tidak dapat dibatalkan.")) {
-        // Jika pengguna mengklik OK, arahkan ke URL proses hapus
-        window.location.href = url;
-    }
-}
 
-/**
- * Pratinjau gambar cover saat URL diisi pada form.
- * Dipanggil saat input URL cover berubah (oninput).
- */
 function pratinjauCover() {
     const urlInput = document.getElementById('cover');
-    const previewImg = document.getElementById('preview-cover');
+    const previewImg = document.getElementById('preview-cover') || document.getElementById('coverPreview');
 
     if (urlInput && previewImg) {
         const url = urlInput.value.trim();
         if (url !== '') {
             previewImg.src = url;
             previewImg.style.display = 'block';
-            // Sembunyikan gambar jika URL tidak valid
             previewImg.onerror = function () {
-                this.style.display = 'none';
+                this.src = 'https://via.placeholder.com/140x190?text=No+Cover';
             };
         } else {
-            previewImg.style.display = 'none';
+            previewImg.src = 'https://via.placeholder.com/140x190?text=No+Cover';
         }
     }
 }
 
-// Jalankan pratinjau cover saat halaman dimuat (untuk halaman edit)
 document.addEventListener('DOMContentLoaded', function () {
     pratinjauCover();
-});
 
+    // Auto-scroll active category pill into view if needed
+    const activePill = document.querySelector('.category-pill.active');
+    if (activePill) {
+        activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+});

@@ -35,13 +35,14 @@ if ($id <= 0) {
 }
 
 // --- Ambil dan Bersihkan Data dari Form ---
-$judul     = trim($_POST['judul']     ?? '');
-$penulis   = trim($_POST['penulis']   ?? '');
-$penerbit  = trim($_POST['penerbit']  ?? '');
-$harga     = (int) ($_POST['harga']  ?? 0);
-$stok      = (int) ($_POST['stok']   ?? 0);
-$deskripsi = trim($_POST['deskripsi'] ?? '');
-$cover     = trim($_POST['cover']     ?? '');
+$judul       = trim($_POST['judul']       ?? '');
+$kategori_id = !empty($_POST['kategori_id']) ? (int) $_POST['kategori_id'] : null;
+$penulis     = trim($_POST['penulis']     ?? '');
+$penerbit    = trim($_POST['penerbit']    ?? '');
+$harga       = (int) ($_POST['harga']     ?? 0);
+$stok        = (int) ($_POST['stok']      ?? 0);
+$deskripsi   = trim($_POST['deskripsi']   ?? '');
+$cover       = trim($_POST['cover']       ?? '');
 
 // --- Validasi: Field wajib tidak boleh kosong ---
 if (
@@ -55,17 +56,17 @@ if (
 
 // --- Eksekusi Query UPDATE menggunakan Prepared Statement ---
 // Klausa WHERE id = ? memastikan HANYA buku dengan ID tersebut yang diupdate
-// Format string bind_param: s=string, i=integer.
-// "sssiissi": judul, penulis, penerbit, harga, stok, deskripsi, cover, id
+// Format string bind_param: i=integer, s=string.
+// "isssiissi": kategori_id, judul, penulis, penerbit, harga, stok, deskripsi, cover, id
 $stmt = $koneksi->prepare(
     "UPDATE buku
-     SET judul = ?, penulis = ?, penerbit = ?, harga = ?, stok = ?, deskripsi = ?, cover = ?
+     SET kategori_id = ?, judul = ?, penulis = ?, penerbit = ?, harga = ?, stok = ?, deskripsi = ?, cover = ?
      WHERE id = ?"
 );
 
 // Ikat semua parameter sesuai urutan placeholder "?"
-// Tipe: s,s,s = judul,penulis,penerbit | i,i = harga,stok | s = deskripsi | s = cover | i = id
-$stmt->bind_param("sssiissi",
+$stmt->bind_param("isssiissi",
+    $kategori_id,
     $judul, $penulis, $penerbit,
     $harga, $stok,
     $deskripsi, $cover,

@@ -29,6 +29,11 @@ if ($email === '' || $password === '') {
 
 // Prepared statement: input user TIDAK pernah disambung langsung ke query.
 $stmt = $koneksi->prepare('SELECT id, nama, email, password, role FROM users WHERE email = ? LIMIT 1');
+
+if (!$stmt) {
+    die("SQL Error: " . $koneksi->error);
+}
+
 $stmt->bind_param('s', $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();

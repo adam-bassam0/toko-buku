@@ -60,6 +60,13 @@ if ($aksi === 'kosongkan') {
             } else {
                 $_SESSION['cart'][$idBuku] = $jumlahBaru;
                 $_SESSION['cart_message'] = ['type' => 'success', 'text' => $aksi === 'tambah' ? 'Buku ditambahkan ke keranjang.' : 'Jumlah buku berhasil diperbarui.'];
+                if ($aksi === 'tambah') {
+                    $_SESSION['cart_toast'] = [
+                        'title' => 'Berhasil Ditambahkan',
+                        'text'  => 'Buku "' . htmlspecialchars($buku['judul']) . '" berhasil dimasukkan ke keranjang belanja!',
+                        'total' => array_sum($_SESSION['cart'])
+                    ];
+                }
             }
         }
     }
@@ -68,5 +75,13 @@ if ($aksi === 'kosongkan') {
 }
 
 $koneksi->close();
+
+// Dukung redirect kembali ke halaman pemanggil (misal: index.php atau detail.php)
+$returnUrl = $_POST['return_url'] ?? '';
+if (!empty($returnUrl) && !str_starts_with($returnUrl, 'http://') && !str_starts_with($returnUrl, 'https://')) {
+    header('Location: ' . $returnUrl);
+    exit;
+}
+
 header('Location: cart.php');
 exit;

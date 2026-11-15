@@ -6,21 +6,37 @@ CREATE DATABASE IF NOT EXISTS db_toko_buku
 
 USE db_toko_buku;
 
--- 2. Buat tabel buku
---    Kolom cover menyimpan URL gambar dari internet (string)
-CREATE TABLE IF NOT EXISTS buku (
-    id       INT(11)        NOT NULL AUTO_INCREMENT,
-    judul    VARCHAR(150)   NOT NULL,
-    penulis  VARCHAR(100)   NOT NULL,
-    penerbit VARCHAR(100)   NOT NULL,
-    harga    DECIMAL(12,0)  NOT NULL DEFAULT 0,
-    stok     INT(11)        NOT NULL DEFAULT 0,
-    deskripsi TEXT,
-    cover    VARCHAR(255)   DEFAULT NULL,
-    PRIMARY KEY (id)
+-- 2a. Buat tabel kategori
+CREATE TABLE IF NOT EXISTS kategori (
+    id         INT(11)      NOT NULL AUTO_INCREMENT,
+    nama       VARCHAR(100) NOT NULL,
+    slug       VARCHAR(100) NOT NULL,
+    deskripsi  TEXT         DEFAULT NULL,
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_kategori_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 2b. Tabel users (akun pelanggan & admin)
+-- 2b. Buat tabel buku
+--    Kolom cover menyimpan URL gambar dari internet (string)
+--    Kolom kategori_id merujuk ke tabel kategori (opsional)
+CREATE TABLE IF NOT EXISTS buku (
+    id          INT(11)        NOT NULL AUTO_INCREMENT,
+    kategori_id INT(11)        DEFAULT NULL,
+    judul       VARCHAR(150)   NOT NULL,
+    penulis     VARCHAR(100)   NOT NULL,
+    penerbit    VARCHAR(100)   NOT NULL,
+    harga       DECIMAL(12,0)  NOT NULL DEFAULT 0,
+    stok        INT(11)        NOT NULL DEFAULT 0,
+    deskripsi   TEXT,
+    cover       VARCHAR(255)   DEFAULT NULL,
+    PRIMARY KEY (id),
+    KEY idx_buku_kategori (kategori_id),
+    CONSTRAINT fk_buku_kategori FOREIGN KEY (kategori_id)
+        REFERENCES kategori (id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2c. Tabel users (akun pelanggan & admin)
 --     password menyimpan hasil password_hash() (bcrypt), BUKAN teks asli.
 CREATE TABLE IF NOT EXISTS users (
     id         INT(11)      NOT NULL AUTO_INCREMENT,
@@ -90,6 +106,16 @@ CREATE TABLE IF NOT EXISTS pembayaran (
 
 
 -- 3. Data contoh (INSERT INTO)
+-- 3a. Data contoh kategori
+INSERT INTO kategori (id, nama, slug, deskripsi) VALUES
+(1, 'Fiksi & Sastra', 'fiksi-sastra', 'Novel, cerpen, fiksi ilmiah, fantasi, dan karya sastra pilihan.'),
+(2, 'Pengembangan Diri', 'pengembangan-diri', 'Buku motivasi, psikologi populer, finansial, dan pembentukan kebiasaan.'),
+(3, 'Komik & Manga', 'komik-manga', 'Komik Jepang (manga), novel grafis, dan cerita bergambar populer.'),
+(4, 'Pelajaran & Sains', 'pelajaran-sains', 'Buku teks akademik, sains, matematika, bahasa, dan ekonomi.'),
+(5, 'Agama & Filsafat', 'agama-filsafat', 'Kajian spiritualitas, teks keagamaan, biografi tokoh, dan pandangan hidup.'),
+(6, 'Anak-anak', 'anak-anak', 'Kisah klasik, dongeng, dan bacaan bergambar untuk anak dan remaja.');
+
+-- 3b. Data contoh buku
 INSERT INTO buku (judul, penulis, penerbit, harga, stok, deskripsi, cover) VALUES
 (
     'Laskar Pelangi',
@@ -609,6 +635,49 @@ INSERT INTO buku (judul, penulis, penerbit, harga, stok, deskripsi, cover) VALUE
     20,
     'Auggie, anak berwajah tidak biasa, masuk sekolah umum untuk pertama kalinya. Kisah hangat tentang persahabatan, keberanian, dan kebaikan.',
     'https://covers.openlibrary.org/b/isbn/9780375869020-L.jpg'
+);
+
+-- Petakan kategori ke buku contoh
+UPDATE buku SET kategori_id = 1 WHERE judul IN (
+    'Laskar Pelangi', 'Bumi Manusia', 'Harry Potter dan Batu Bertuah',
+    'It Ends with Us', 'The Seven Husbands of Evelyn Hugo', 'The Hunger Games',
+    'Percy Jackson dan Pencuri Petir', 'Fourth Wing', 'Divergent',
+    'The Fault in Our Stars', 'Twilight', 'The Midnight Library',
+    'Where the Crawdads Sing', 'A Court of Thorns and Roses',
+    'Throne of Glass', 'Red Queen', 'Normal People'
+);
+
+UPDATE buku SET kategori_id = 2 WHERE judul IN (
+    'Atomic Habits', 'Filosofi Teras', 'The Psychology of Money',
+    'The Subtle Art of Not Giving a F*ck', 'The Alchemist', 'Ikigai'
+);
+
+UPDATE buku SET kategori_id = 3 WHERE judul IN (
+    'One Piece Vol. 1', 'Jujutsu Kaisen Vol. 1', 'Naruto Vol. 1',
+    'Dragon Ball Vol. 1', 'Death Note Vol. 1', 'Attack on Titan Vol. 1',
+    'Demon Slayer Vol. 1', 'My Hero Academia Vol. 1',
+    'Fullmetal Alchemist Vol. 1', 'Tokyo Ghoul Vol. 1',
+    'Maus: A Survivor\'s Tale I', 'Persepolis'
+);
+
+UPDATE buku SET kategori_id = 4 WHERE judul IN (
+    'Campbell Biology', 'Chemistry: The Central Science',
+    'Fundamentals of Physics', 'Concepts of Physics Vol. 1',
+    'English Grammar in Use', 'Essential Grammar in Use',
+    'Oxford Advanced Learner\'s Dictionary', 'The Elements',
+    'Calculus', 'Principles of Economics'
+);
+
+UPDATE buku SET kategori_id = 5 WHERE judul IN (
+    'The Study Quran', 'Muhammad: His Life Based on the Earliest Sources',
+    'The Bhagavad Gita', 'The Heart of the Buddha\'s Teaching',
+    'Mere Christianity'
+);
+
+UPDATE buku SET kategori_id = 6 WHERE judul IN (
+    'The Little Prince', 'Charlotte\'s Web',
+    'The Lion, the Witch and the Wardrobe', 'Matilda',
+    'Charlie and the Chocolate Factory', 'Diary of a Wimpy Kid', 'Wonder'
 );
 
 -- ============================================
