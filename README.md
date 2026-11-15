@@ -8,8 +8,9 @@ Project ini dikembangkan menggunakan PHP Native dan MySQL. Antarmuka menggunakan
 
 ### User (Pelanggan)
 - **Book Catalog** — Menampilkan koleksi buku dengan informasi lengkap.
-- **Book Search** — Mencari buku berdasarkan judul.
-- **Book Details** — Melihat informasi detail buku, termasuk penulis, penerbit, harga, dan deskripsi.
+- **Book Categories** — Filter dan jelajahi buku berdasarkan kategori (pills navigasi + dropdown navbar).
+- **Book Search** — Mencari buku berdasarkan judul atau penulis, termasuk pencarian di dalam kategori aktif.
+- **Book Details** — Melihat informasi detail buku, termasuk kategori, penulis, penerbit, harga, dan deskripsi.
 - **Register & Login** — Daftar akun dan masuk sebagai pelanggan (password di-hash bcrypt).
 - **Shopping Cart** — Menambah, mengubah jumlah, dan menghapus buku dari keranjang (dibatasi stok).
 - **Checkout** — Membuat pesanan; stok berkurang otomatis dalam satu transaksi database.
@@ -19,8 +20,9 @@ Project ini dikembangkan menggunakan PHP Native dan MySQL. Antarmuka menggunakan
 
 ### Admin
 - **Admin Dashboard** — Halaman pengelolaan buku, hanya untuk akun ber-role `admin`.
-- **Add Books** — Menambahkan koleksi buku.
-- **Edit Books** — Memperbarui informasi buku.
+- **Category Management** — Tambah, edit, dan hapus kategori buku beserta jumlah buku terkait.
+- **Add Books** — Menambahkan koleksi buku beserta pemilihan kategori.
+- **Edit Books** — Memperbarui informasi buku dan kategori buku.
 - **Delete Books** — Menghapus koleksi buku.
 - **Monitoring Pesanan** — Melihat semua pesanan, metode pembayaran (QRIS/transfer), status lunas/menunggu, dan bukti transfer.
 - **Role Protection** — Pelanggan tidak bisa membuka halaman admin.
@@ -58,14 +60,18 @@ toko-buku/
 │   └── auth.php            # Session, CSRF, login guard, role admin
 │
 ├── database/
-│   ├── schema.sql          # Skema lengkap (buku, users, pesanan, detail_pesanan, pembayaran)
+│   ├── schema.sql          # Skema lengkap (kategori, buku, users, pesanan, detail_pesanan, pembayaran)
 │   ├── migrasi_auth.sql    # Migrasi login/pesanan untuk DB lama
-│   └── migrasi_pembayaran.sql # Migrasi tabel pembayaran untuk DB lama
+│   ├── migrasi_pembayaran.sql # Migrasi tabel pembayaran untuk DB lama
+│   └── migrasi_kategori.sql # Migrasi fitur kategori buku untuk DB yang sudah ada
 │
 ├── partials/
-│   └── navbar.php          # Navbar bersama (menu menyesuaikan status login)
+│   ├── navbar.php          # Navbar bersama pelanggan (menu kategori, login, keranjang)
+│   ├── navbar_admin.php    # Navbar panel admin (buku, kategori, pesanan)
+│   └── footer_admin.php
 │
 ├── proses/
+│   ├── proses_kategori.php # CRUD kategori buku (khusus admin + CSRF)
 │   ├── proses_tambah.php   # INSERT buku (khusus admin + CSRF)
 │   ├── proses_edit.php     # UPDATE buku (khusus admin + CSRF)
 │   ├── proses_hapus.php    # DELETE buku (khusus admin + CSRF)
@@ -76,12 +82,15 @@ toko-buku/
 │   └── proses_bayar.php    # Konfirmasi pembayaran + upload bukti
 │
 ├── admin/                  # Panel admin (dilindungi require_admin)
-│   ├── index.php           # Data buku
+│   ├── index.php           # Data buku + filter kategori
+│   ├── kategori.php        # Kelola kategori buku (tambah, edit, hapus)
+│   ├── tambah.php          # Form input buku + dropdown kategori
+│   ├── edit.php            # Form edit buku + dropdown kategori
 │   └── pesanan.php         # Monitoring pesanan & pembayaran
 ├── assets/
 │   └── uploads/bukti/      # Bukti transfer yang diunggah pelanggan
-├── index.php               # Katalog + pencarian
-├── detail.php              # Detail buku
+├── index.php               # Katalog + filter kategori (pills) + pencarian
+├── detail.php              # Detail buku + tag kategori & breadcrumb
 ├── cart.php                # Keranjang belanja
 ├── checkout.php            # Konfirmasi pesanan + pilih metode bayar
 ├── pembayaran.php          # Instruksi QRIS / transfer + konfirmasi
@@ -116,8 +125,11 @@ cd toko-buku
 
 1. Jalankan Apache dan MySQL melalui XAMPP Control Panel.
 2. Buka phpMyAdmin.
-3. **Instalasi baru:** import file `database/schema.sql`.
-4. **Database yang sudah ada:** import `database/migrasi_auth.sql` (tabel login/pesanan), lalu `database/migrasi_pembayaran.sql` (tabel pembayaran). Tidak menghapus data buku.
+3. **Instalasi baru:** import file `database/schema.sql` (sudah termasuk tabel kategori, buku, users, pesanan, dan pembayaran).
+4. **Database yang sudah ada:** 
+   - Import `database/migrasi_auth.sql` (tabel login/pesanan).
+   - Import `database/migrasi_pembayaran.sql` (tabel pembayaran).
+   - Import `database/migrasi_kategori.sql` (tabel kategori, foreign key pada buku, dan pemetaan kategori buku bawaan).
 5. Sesuaikan konfigurasi koneksi database pada `config/koneksi.php`.
 
 ### 3. Akun Demo
