@@ -24,27 +24,47 @@ define('DB_PORT', 3306);
 mysqli_report(MYSQLI_REPORT_OFF);
 
 /**
- * Eksekusi file SQL jamak (multi-query) secara aman dan bersih
+ * Eksekusi file SQL jamak (multi-query) secara aman dan bersih.
+ * File selalu dijalankan pada database yang sedang terhubung,
+ * sehingga perintah "USE ...;" di dalam file tidak membuat
+ * koneksi berpindah ke database lain.
  */
 function db_jalankan_file_sql(mysqli $koneksi, string $filePath): bool
 {
-    if (!file_exists($filePath)) {
-        return false;
-    }
-    $sql = file_get_contents($filePath);
-    if (empty(trim($sql))) {
+    if (!is_file($filePath) || !is_readable($filePath)) {
+        error_log('Auto-init: file SQL tidak ditemukan: ' . $filePath);
         return false;
     }
 
-    if ($koneksi->multi_query($sql)) {
-        do {
-            if ($result = $koneksi->store_result()) {
-                $result->free();
-            }
-        } while ($koneksi->more_results() && $koneksi->next_result());
-        return true;
+    $sql = file_get_contents($filePath);
+    if ($sql === false || trim($sql) === '') {
+        error_log('Auto-init: file SQL kosong: ' . $filePath);
+        return false;
     }
-    return false;
+
+    // Buang perintah USE ...; agar tetap memakai DB_NAME yang aktif.
+    $sql = preg_replace('/^\s*USE\s+[^\s;]+\s*;/mi', '', $sql);
+    if (trim((string) $sql) === '') {
+        return false;
+    }
+
+    if (!$koneksi->multi_query($sql)) {
+        error_log('Auto-init SQL gagal (' . basename($filePath) . '): ' . $koneksi->error);
+        return false;
+    }
+
+    do {
+        if ($result = $koneksi->store_result()) {
+            $result->free();
+        }
+    } while ($koneksi->more_results() && $koneksi->next_result());
+
+    if ($koneksi->errno) {
+        error_log('Auto-init SQL gagal (' . basename($filePath) . '): ' . $koneksi->error);
+        return false;
+    }
+
+    return true;
 }
 
 // 1. Coba koneksi langsung ke database yang ditentukan
@@ -169,17 +189,21 @@ if (!$koneksi || $koneksi->connect_error) {
 // Atur encoding karakter ke UTF-8mb4
 $koneksi->set_charset("utf8mb4");
 
-// 4. AUTO-INITIALIZATION: Periksa apakah tabel buku & kategori sudah ada
-//    Jika belum, otomatis buat semua tabel dan isi data contoh!
+// 4. AUTO-INITIALIZATION: pastikan tabel inti & kategori tersedia.
+//    Jika database masih kosong, impor schema lengkap.
 $cekTabel = $koneksi->query("SHOW TABLES LIKE 'buku'");
 if (!$cekTabel || $cekTabel->num_rows === 0) {
-    $schemaFile = __DIR__ . '/../database/schema.sql';
-    db_jalankan_file_sql($koneksi, $schemaFile);
-} else {
-    // Periksa apakah tabel kategori sudah ada
-    $cekKat = $koneksi->query("SHOW TABLES LIKE 'kategori'");
-    if (!$cekKat || $cekKat->num_rows === 0) {
-        $migrasiKat = __DIR__ . '/../database/migrasi_kategori.sql';
-        db_jalankan_file_sql($koneksi, $migrasiKat);
-    }
+    db_jalankan_file_sql($koneksi, __DIR__ . '/../database/schema.sql');
+}
+
+// Pastikan tabel kategori dan kolom buku.kategori_id ada.
+// (Database lama mungkin dibuat sebelum fitur kategori ditambahkan.)
+$cekKategori = $koneksi->query("SHOW TABLES LIKE 'kategori'");
+$cekKolom    = $koneksi->query("SHOW COLUMNS FROM buku LIKE 'kategori_id'");
+
+if (
+    !$cekKategori || $cekKategori->num_rows === 0
+    || !$cekKolom || $cekKolom->num_rows === 0
+) {
+    db_jalankan_file_sql($koneksi, __DIR__ . '/../database/migrasi_kategori.sql');
 }
