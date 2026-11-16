@@ -75,7 +75,7 @@ $rekening = [
 <body class="d-flex flex-column min-vh-100">
 
     <!-- ===== NAVBAR ===== -->
-    <?php require __DIR__ . '/partials/navbar.php'; ?>
+    <?php require __DIR__ . '/app/views/partials/navbar.php'; ?>
 
     <main class="container my-5 flex-grow-1">
 
@@ -111,10 +111,15 @@ $rekening = [
                             <div class="small text-muted">Waktu Bayar: <?= date('d M Y, H:i', strtotime($pesanan['dibayar_pada'])) ?></div>
                         <?php endif; ?>
                     </div>
-                    <div>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
                         <a href="pesanan.php" class="btn btn-primary px-4 py-2 fw-bold">
                             <i class="bi bi-receipt me-1"></i>Ke Riwayat Pesanan
                         </a>
+                        <?php if (!empty($pesanan['bukti'])): ?>
+                            <a href="bukti.php?pesanan=<?= $pesananId ?>" target="_blank" rel="noopener" class="btn btn-outline-secondary px-4 py-2">
+                                <i class="bi bi-image me-1"></i>Lihat Bukti Bayar
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 <?php
 // ============================================
-// File    : partials/footer_admin.php
+// File    : app/views/partials/footer_admin.php
 // Deskripsi: Footer bersama untuk halaman panel admin
 // ============================================
 ?>

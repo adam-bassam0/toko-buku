@@ -52,7 +52,7 @@ $jumlahCart = array_sum($_SESSION['cart']);
 <body class="d-flex flex-column min-vh-100">
 
     <!-- ===== NAVBAR ===== -->
-    <?php require __DIR__ . '/partials/navbar.php'; ?>
+    <?php require __DIR__ . '/app/views/partials/navbar.php'; ?>
 
     <main class="container my-5 flex-grow-1">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
@@ -134,7 +134,7 @@ $jumlahCart = array_sum($_SESSION['cart']);
                                                 Rp <?= number_format((float) $item['harga'], 0, ',', '.') ?>
                                             </td>
                                             <td>
-                                                <form action="proses_cart.php" method="POST" class="d-flex align-items-center gap-1">
+                                                <form action="proses/proses_cart.php" method="POST" class="d-flex align-items-center gap-1">
                                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                                     <input type="hidden" name="aksi" value="ubah">
                                                     <input type="hidden" name="id_buku" value="<?= (int) $item['id'] ?>">
@@ -156,7 +156,7 @@ $jumlahCart = array_sum($_SESSION['cart']);
                                                 Rp <?= number_format($item['subtotal'], 0, ',', '.') ?>
                                             </td>
                                             <td class="text-center">
-                                                <form action="proses_cart.php" method="POST">
+                                                <form action="proses/proses_cart.php" method="POST">
                                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                                     <input type="hidden" name="aksi" value="hapus">
                                                     <input type="hidden" name="id_buku" value="<?= (int) $item['id'] ?>">
@@ -173,7 +173,7 @@ $jumlahCart = array_sum($_SESSION['cart']);
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center">
-                        <form action="proses_cart.php" method="POST" onsubmit="return confirm('Kosongkan seluruh buku di keranjang?')">
+                        <form action="proses/proses_cart.php" method="POST" onsubmit="return confirm('Kosongkan seluruh buku di keranjang?')">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                             <input type="hidden" name="aksi" value="kosongkan">
                             <button class="btn btn-outline-danger btn-sm" type="submit">

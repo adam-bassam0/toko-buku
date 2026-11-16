@@ -83,7 +83,7 @@ try {
             throw new RuntimeException('Format bukti harus JPG, PNG, atau WebP.');
         }
 
-        $folder = __DIR__ . '/../assets/uploads/bukti';
+        $folder = __DIR__ . '/../storage/uploads/bukti';
         if (!is_dir($folder) && !mkdir($folder, 0755, true)) {
             throw new RuntimeException('Folder upload tidak dapat dibuat.');
         }
@@ -95,7 +95,7 @@ try {
         }
 
         $fileDibuat   = $folder . '/' . $namaFile;
-        $buktiRelatif = 'assets/uploads/bukti/' . $namaFile;
+        $buktiRelatif = 'storage/uploads/bukti/' . $namaFile;
     }
 
     // ---------- Update status dalam transaksi ----------

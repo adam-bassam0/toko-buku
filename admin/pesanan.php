@@ -45,7 +45,7 @@ $warnaPesanan = [
 <body class="d-flex flex-column min-vh-100">
 
     <!-- ===== NAVBAR ADMIN ===== -->
-    <?php require __DIR__ . '/../partials/navbar_admin.php'; ?>
+    <?php require __DIR__ . '/../app/views/partials/navbar_admin.php'; ?>
 
     <main class="container my-4 flex-grow-1">
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -129,7 +129,7 @@ $warnaPesanan = [
                                 </td>
                                 <td class="text-center">
                                     <?php if (!empty($row['bukti'])): ?>
-                                        <a href="../<?= htmlspecialchars($row['bukti']) ?>" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm p-1 px-2" title="Lihat Bukti Transfer">
+                                        <a href="../bukti.php?pesanan=<?= (int) $row['id'] ?>" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm p-1 px-2" title="Lihat Bukti Transfer">
                                             <i class="bi bi-image"></i>
                                         </a>
                                     <?php else: ?>
@@ -156,7 +156,7 @@ $warnaPesanan = [
     </main>
 
     <!-- ===== FOOTER ===== -->
-    <?php require __DIR__ . '/../partials/footer_admin.php'; ?>
+    <?php require __DIR__ . '/../app/views/partials/footer_admin.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

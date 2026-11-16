@@ -119,7 +119,7 @@ if ($kataCari !== '' && $kategoriAktif !== null) {
 <body>
 
     <!-- ===== NAVBAR ===== -->
-    <?php require __DIR__ . '/partials/navbar.php'; ?>
+    <?php require __DIR__ . '/app/views/partials/navbar.php'; ?>
 
     <!-- ===== HERO SECTION ===== -->
     <section class="hero-section text-center">
@@ -451,7 +451,7 @@ if ($kataCari !== '' && $kategoriAktif !== null) {
                                     <a href="detail.php?id=<?= $buku['id'] ?>" class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center">
                                         <i class="bi bi-info-circle me-1"></i>Detail
                                     </a>
-                                    <form action="proses_cart.php" method="POST" class="m-0">
+                                    <form action="proses/proses_cart.php" method="POST" class="m-0">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                         <input type="hidden" name="aksi" value="tambah">
                                         <input type="hidden" name="id_buku" value="<?= (int) $buku['id'] ?>">
@@ -616,7 +616,7 @@ if ($kataCari !== '' && $kategoriAktif !== null) {
                             </div>
 
                             <div class="d-flex gap-2">
-                                <form action="proses_cart.php" method="POST" class="flex-grow-1" id="qvFormCart">
+                                <form action="proses/proses_cart.php" method="POST" class="flex-grow-1" id="qvFormCart">
                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                     <input type="hidden" name="aksi" value="tambah">
                                     <input type="hidden" name="id_buku" id="qvIdBuku" value="">

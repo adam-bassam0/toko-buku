@@ -46,7 +46,7 @@ $buku = $result->fetch_assoc();
 <body>
 
     <!-- ===== NAVBAR ===== -->
-    <?php require __DIR__ . '/partials/navbar.php'; ?>
+    <?php require __DIR__ . '/app/views/partials/navbar.php'; ?>
 
     <!-- ===== KONTEN DETAIL ===== -->
     <main class="container my-5 flex-grow-1">
@@ -172,7 +172,7 @@ $buku = $result->fetch_assoc();
 
                     <!-- Action Buttons -->
                     <div class="d-flex gap-3 flex-wrap mt-auto pt-3 border-top border-slate-200">
-                        <form action="proses_cart.php" method="POST" class="flex-grow-1" style="max-width: 320px;">
+                        <form action="proses/proses_cart.php" method="POST" class="flex-grow-1" style="max-width: 320px;">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                             <input type="hidden" name="aksi" value="tambah">
                             <input type="hidden" name="id_buku" value="<?= (int) $buku['id'] ?>">

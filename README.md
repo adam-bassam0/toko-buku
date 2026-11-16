@@ -55,50 +55,40 @@ Checkout di `proses/proses_checkout.php` menerapkan ACID:
 
 ```text
 toko-buku/
-├── config/
-│   ├── koneksi.php         # Koneksi database + mode APP_ENV
-│   └── auth.php            # Session, CSRF, login guard, role admin
+├── app/                    # Kode inti aplikasi
+│   ├── bootstrap.php       # Titik masuk: env, auth, database
+│   ├── config/
+│   │   ├── app.php         # Konfigurasi umum (APP_ENV)
+│   │   ├── database.php    # Koneksi + auto-migration
+│   │   └── env.php         # Pembaca file .env
+│   ├── helpers/
+│   │   └── auth.php        # Session, CSRF, guard login/admin
+│   └── views/partials/     # Navbar & footer bersama
 │
-├── database/
-│   ├── schema.sql          # Skema lengkap (kategori, buku, users, pesanan, detail_pesanan, pembayaran)
-│   ├── migrasi_auth.sql    # Migrasi login/pesanan untuk DB lama
-│   ├── migrasi_pembayaran.sql # Migrasi tabel pembayaran untuk DB lama
-│   └── migrasi_kategori.sql # Migrasi fitur kategori buku untuk DB yang sudah ada
-│
-├── partials/
-│   ├── navbar.php          # Navbar bersama pelanggan (menu kategori, login, keranjang)
-│   ├── navbar_admin.php    # Navbar panel admin (buku, kategori, pesanan)
-│   └── footer_admin.php
-│
-├── proses/
-│   ├── proses_kategori.php # CRUD kategori buku (khusus admin + CSRF)
-│   ├── proses_tambah.php   # INSERT buku (khusus admin + CSRF)
-│   ├── proses_edit.php     # UPDATE buku (khusus admin + CSRF)
-│   ├── proses_hapus.php    # DELETE buku (khusus admin + CSRF)
-│   ├── proses_login.php    # Verifikasi login
-│   ├── proses_register.php # Pendaftaran akun
-│   ├── proses_logout.php   # Keluar akun
-│   ├── proses_checkout.php # Transaksi pesanan (ACID)
-│   └── proses_bayar.php    # Konfirmasi pembayaran + upload bukti
-│
+├── config/                 # Wrapper kompatibilitas kode lama
+├── database/               # Skema & migrasi SQL
+├── docs/                   # CONTRIBUTING.md + STRUCTURE.md
+├── proses/                 # Handler POST (termasuk proses_cart.php)
 ├── admin/                  # Panel admin (dilindungi require_admin)
-│   ├── index.php           # Data buku + filter kategori
-│   ├── kategori.php        # Kelola kategori buku (tambah, edit, hapus)
-│   ├── tambah.php          # Form input buku + dropdown kategori
-│   ├── edit.php            # Form edit buku + dropdown kategori
-│   └── pesanan.php         # Monitoring pesanan & pembayaran
-├── assets/
-│   └── uploads/bukti/      # Bukti transfer yang diunggah pelanggan
-├── index.php               # Katalog + filter kategori (pills) + pencarian
-├── detail.php              # Detail buku + tag kategori & breadcrumb
+├── assets/                 # CSS & JS publik
+├── storage/uploads/bukti/  # Bukti transfer (dilayani lewat bukti.php)
+│
+├── bukti.php               # Penyaji bukti pembayaran yang aman
+├── index.php               # Katalog + filter kategori + pencarian
+├── detail.php              # Detail buku
 ├── cart.php                # Keranjang belanja
-├── checkout.php            # Konfirmasi pesanan + pilih metode bayar
-├── pembayaran.php          # Instruksi QRIS / transfer + konfirmasi
+├── checkout.php            # Checkout + pilih metode bayar
+├── pembayaran.php          # Instruksi QRIS / transfer
 ├── pesanan.php             # Riwayat pesanan pelanggan
 ├── login.php
 ├── register.php
-└── proses_cart.php         # Aksi keranjang
+├── setup.php               # Asisten setup database
+├── keranjang.php           # Alias lama -> cart.php
+├── .env.example            # Contoh konfigurasi environment
+└── README.md
 ```
+
+Struktur lengkap dan aturan penempatan ada di [`docs/STRUCTURE.md`](docs/STRUCTURE.md).
 
 ## 🚀 Getting Started
 
@@ -130,7 +120,7 @@ cd toko-buku
    - Import `database/migrasi_auth.sql` (tabel login/pesanan).
    - Import `database/migrasi_pembayaran.sql` (tabel pembayaran).
    - Import `database/migrasi_kategori.sql` (tabel kategori, foreign key pada buku, dan pemetaan kategori buku bawaan).
-5. Sesuaikan konfigurasi koneksi database pada `config/koneksi.php`.
+5. Salin `.env.example` menjadi `.env`, lalu sesuaikan kredensial database di dalamnya.
 
 ### 3. Akun Demo
 
@@ -158,7 +148,7 @@ Alamat lokal:
 http://localhost/toko-buku
 ```
 
-*Catatan: Jika username, password, atau nama database MySQL berbeda, sesuaikan `config/koneksi.php`.*
+*Catatan: Jika username, password, atau nama database MySQL berbeda, sesuaikan file `.env`.*
 
 ## 💳 Pembayaran (QRIS & Transfer Bank)
 

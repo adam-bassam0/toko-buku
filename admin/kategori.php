@@ -39,7 +39,7 @@ $totalTanpaKategori = $resTanpaKategori ? (int) $resTanpaKategori->fetch_assoc()
 <body class="d-flex flex-column min-vh-100">
 
     <!-- ===== NAVBAR ADMIN ===== -->
-    <?php require __DIR__ . '/../partials/navbar_admin.php'; ?>
+    <?php require __DIR__ . '/../app/views/partials/navbar_admin.php'; ?>
 
     <!-- ===== KONTEN UTAMA ===== -->
     <main class="container my-4 flex-grow-1">
@@ -235,7 +235,7 @@ $totalTanpaKategori = $resTanpaKategori ? (int) $resTanpaKategori->fetch_assoc()
     </div>
 
     <!-- ===== FOOTER ===== -->
-    <?php require __DIR__ . '/../partials/footer_admin.php'; ?>
+    <?php require __DIR__ . '/../app/views/partials/footer_admin.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>

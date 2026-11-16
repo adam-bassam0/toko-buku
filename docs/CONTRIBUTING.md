@@ -37,11 +37,11 @@ git merge develop
 
 ## ⚙️ Mode Environment
 
-Konfigurasi ada di `config/koneksi.php`:
+Konfigurasi ada di `.env` (salin dari `.env.example`):
 
-```php
-define('APP_ENV', 'dev');   // error PHP tampilkan -> saat ngoding
-define('APP_ENV', 'prod');  // error disembunyikan -> saat sudah online
+```env
+APP_ENV=dev   # error PHP ditampilkan -> saat ngoding
+APP_ENV=prod  # error disembunyikan -> saat sudah online
 ```
 
 - **`dev`**: semua error dan detail MySQL ditampilkan untuk mempermudah debug.
@@ -53,4 +53,5 @@ Lihat `.gitignore`. Poin penting:
 
 - `Thumbs.db`, `.DS_Store`, folder `.vscode/` / `.idea/`
 - File log (`*.log`) dan file sementara
-- `config/koneksi_local.php` — taruh kredensial asli/kursing di sini jika suatu saat ada server produksi
+- `.env` — berisi kredensial lokal; gunakan `.env.example` sebagai template
+- `storage/uploads/bukti/*` — file bukti pembayaran pengguna

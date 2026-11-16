@@ -6,11 +6,15 @@
 //            inisialisasi data baru dalam 1 klik.
 // ============================================
 
-define('DB_HOST', '127.0.0.1');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'db_toko_buku');
-define('DB_PORT', 3306);
+require_once __DIR__ . '/app/config/env.php';
+env_load(__DIR__ . '/.env');
+require_once __DIR__ . '/app/config/app.php';
+
+define('DB_HOST', (string) env('DB_HOST', '127.0.0.1'));
+define('DB_USER', (string) env('DB_USER', 'root'));
+define('DB_PASS', (string) env('DB_PASS', ''));
+define('DB_NAME', (string) env('DB_NAME', 'db_toko_buku'));
+define('DB_PORT', (int) env('DB_PORT', 3306));
 
 mysqli_report(MYSQLI_REPORT_OFF);
 

@@ -1,9 +1,9 @@
 <?php
 // Memproses perubahan keranjang belanja berbasis PHP Session.
-require_once __DIR__ . '/config/auth.php';
+require_once __DIR__ . '/../app/bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: cart.php');
+    header('Location: ../cart.php');
     exit;
 }
 
@@ -12,11 +12,10 @@ $tokenForm = $_POST['csrf_token'] ?? '';
 $tokenSesi = $_SESSION['csrf_token'] ?? '';
 if (!$tokenSesi || !hash_equals($tokenSesi, $tokenForm)) {
     $_SESSION['cart_message'] = ['type' => 'danger', 'text' => 'Permintaan tidak valid. Silakan coba kembali.'];
-    header('Location: cart.php');
+    header('Location: ../cart.php');
     exit;
 }
 
-require_once 'config/koneksi.php';
 $_SESSION['cart'] ??= [];
 $aksi = $_POST['aksi'] ?? '';
 $idBuku = (int) ($_POST['id_buku'] ?? 0);
@@ -76,12 +75,23 @@ if ($aksi === 'kosongkan') {
 
 $koneksi->close();
 
-// Dukung redirect kembali ke halaman pemanggil (misal: index.php atau detail.php)
-$returnUrl = $_POST['return_url'] ?? '';
-if (!empty($returnUrl) && !str_starts_with($returnUrl, 'http://') && !str_starts_with($returnUrl, 'https://')) {
+// Dukung redirect kembali ke halaman pemanggil (misal: index.php atau detail.php).
+// Hanya izinkan path internal agar tidak menjadi open redirect.
+$returnUrl = trim((string) ($_POST['return_url'] ?? ''));
+$returnValid = $returnUrl !== ''
+    && !preg_match('#^[a-z][a-z0-9+.-]*:#i', $returnUrl) // tolak http:, javascript:, dll.
+    && !str_starts_with($returnUrl, '//')                 // tolak //domain-luar
+    && !str_contains($returnUrl, '\\');                    // tolak /\domain-luar
+
+if ($returnValid) {
+    // Form berada di root, sedangkan file ini ada di proses/.
+    // Tambahkan ../ untuk path relatif dari root.
+    if (!str_starts_with($returnUrl, '../') && !str_starts_with($returnUrl, '/')) {
+        $returnUrl = '../' . $returnUrl;
+    }
     header('Location: ' . $returnUrl);
     exit;
 }
 
-header('Location: cart.php');
+header('Location: ../cart.php');
 exit;

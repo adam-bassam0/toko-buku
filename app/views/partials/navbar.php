@@ -1,10 +1,9 @@
 <?php
 // ============================================
-// File    : partials/navbar.php
-// Deskripsi: Navbar bersama pelanggan & umum
+// File    : app/views/partials/navbar.php
+// Deskripsi: Navbar bersama pelanggan & umum.
+//            $koneksi sudah dimuat oleh app/bootstrap.php.
 // ============================================
-
-require_once __DIR__ . '/../config/koneksi.php';
 
 $jumlahCart = array_sum($_SESSION['cart'] ?? []);
 $navUser    = auth_user();

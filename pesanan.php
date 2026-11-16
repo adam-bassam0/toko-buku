@@ -72,7 +72,7 @@ $warnaStatus = [
 <body class="d-flex flex-column min-vh-100">
 
     <!-- ===== NAVBAR ===== -->
-    <?php require __DIR__ . '/partials/navbar.php'; ?>
+    <?php require __DIR__ . '/app/views/partials/navbar.php'; ?>
 
     <main class="container my-5 flex-grow-1">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">

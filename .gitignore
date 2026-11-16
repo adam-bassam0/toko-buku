@@ -16,9 +16,17 @@ error/
 tmp/
 
 # ===== Konfigurasi lokal (jangan commit kredensial asli) =====
-# config/koneksi.php sengaja di-commit untuk project pembelajaran.
-# Jika nanti ada kredensial produksi, pindahkan ke file berikut:
-config/koneksi_local.php
+# Salin .env.example menjadi .env lalu sesuaikan nilainya.
+.env
+.env.*
+!.env.example
+
+# ===== Upload pengguna =====
+storage/uploads/bukti/*
+!storage/uploads/bukti/.gitignore
+
+# ===== Arsip / file sampah =====
+*.zip
 
 # ===== Dependency (jika nanti pakai Composer/npm) =====
 vendor/

@@ -1,6 +1,6 @@
 <?php
 // ============================================
-// File    : partials/navbar_admin.php
+// File    : app/views/partials/navbar_admin.php
 // Deskripsi: Navbar bersama untuk panel admin
 // ============================================
 
