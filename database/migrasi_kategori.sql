@@ -9,7 +9,7 @@
 --             pada database db_toko_buku.
 -- ============================================
 
-USE db_toko_buku_dev;
+USE db_toko_buku;
 
 -- 1. Buat tabel kategori jika belum ada
 CREATE TABLE IF NOT EXISTS kategori (
